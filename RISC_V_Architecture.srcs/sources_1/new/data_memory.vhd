@@ -1,0 +1,73 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 11.02.2025 15:38:46
+-- Design Name: 
+-- Module Name: data_memory - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity data_memory is
+  Port (
+    --INPUTS
+    clk : in std_logic;
+    
+    addra : in std_logic_vector(31 downto 0);
+    dina: in std_logic_vector(31 downto 0);
+    wea : in std_logic;
+    
+    --OUTPUTS
+    mem_out : out std_logic_vector(31 downto 0)
+  );
+end data_memory;
+
+architecture Behavioral of data_memory is
+    -- Define a memory array (custom type) for instructions (size: 31 instructions each of 32bit)
+    type memory_type is array(0 to 4095) of std_logic_vector(31 downto 0);
+    -- Define the signal of memory_type type
+    signal data_file : memory_type := (
+        -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
+        0 => x"00000000", -- always 0
+        1 => x"00000001",
+        2 => x"00000002",
+        3 => x"00000003",
+        4 => x"00000004",
+        5 => x"00000005",
+        6 => x"00000006",
+        7 => x"00000007",
+        8 => x"00000008",
+        9 => x"00000009",
+        others => x"00000000"
+    );
+begin
+    process (clk)
+    begin
+        if (wea = '0') then --we are reading 
+            mem_out <= data_file(to_integer(unsigned(addra)));
+        else --we are writing
+            data_file(to_integer(unsigned(addra))) <= dina;
+        end if;
+    end process;
+
+end Behavioral;
