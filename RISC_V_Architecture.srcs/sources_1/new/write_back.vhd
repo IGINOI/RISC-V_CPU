@@ -15,7 +15,6 @@
 -- Revision:
 -- Revision 0.01 - File Created
 -- Additional Comments:
--- 
 ----------------------------------------------------------------------------------
 
 
@@ -48,7 +47,7 @@ architecture Behavioral of write_back is
 
 begin
 
-    process(clk)
+    compute_next_pc: process(clk)
     begin
         --Assign the value to pc_out
         if (branch_cond = '1') then
@@ -60,7 +59,10 @@ begin
         else 
             pc_out <= next_pc;
         end if;
-        
+     end process;
+     
+     compute_write_back_value: process(clk)
+     begin
         --Assign the value to rd_value
         if op_class = "00001" then --ALU operation
             rd_value <= alu_result;      

@@ -32,7 +32,7 @@ entity instruction_memory is
     port(
         --INPUTS
         clk : in std_logic;
-        addr : in std_logic_vector(9 downto 0); --input address (10 bits, for 1024 instructions)
+        addr : in std_logic_vector(31 downto 0); --input address (10 bits, for 1024 instructions)
         
         --OUTPUTS
         instruction_out : out std_logic_vector(31 downto 0)  -- Output instruction
@@ -47,10 +47,10 @@ architecture Behavioral of instruction_memory is
     -- Define the signal of memory_type type
     signal mem : memory_type := (
         -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
-        0 => x"00000000",
-        1 => x"00000007",
-        2 => x"00000008",
-        3 => x"00000009",
+        0 => x"00000033",
+        1 => x"00008563",
+        2 => x"00000033",
+        3 => x"00000033",
         4 => x"0000000A",
         5 => x"0000000B",
         6 => x"0000000C",

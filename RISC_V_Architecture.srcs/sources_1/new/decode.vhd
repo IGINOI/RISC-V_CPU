@@ -32,8 +32,8 @@ entity decode is
     Port (
         --INPUTS
         clk : in std_logic;
-        next_pc_in : in std_logic_vector(9 downto 0);
-        curr_pc_in : in std_logic_vector(9 downto 0);
+        next_pc_in : in std_logic_vector(31 downto 0);
+        curr_pc_in : in std_logic_vector(31 downto 0);
         instruction_in : in std_logic_vector(31 downto 0);
         
         --comes from lather stages
@@ -87,25 +87,9 @@ architecture Behavioral of decode is
     
 begin
 
-    --PROCESS (1) -> 32 bits extension of current and the next program counters
-    process(clk)
-    begin
-        if curr_pc_in(9) = '1' then
-            -- Negative case: fill upper 22 bits with 1's
-            curr_pc_out <= "1111111111111111111111" & curr_pc_in;
-        else
-            -- Positive case: fill upper 22 bits with 0's
-            curr_pc_out <= "0000000000000000000000" & curr_pc_in;
-        end if;
-        
-        if next_pc_in(9) = '1' then
-            -- Negative case: fill upper 22 bits with 1's
-            next_pc_out <= "1111111111111111111111" & next_pc_in;
-        else
-            -- Positive case: fill upper 22 bits with 0's
-            next_pc_out <= "0000000000000000000000" & next_pc_in;
-        end if;
-    end process;
+    -- Forward program counters
+    curr_pc_out <= curr_pc_in;
+    next_pc_out <= next_pc_in;
     
     
     --PROCESS (2) -> opcode, funct3 and funct7 extraction
