@@ -72,6 +72,7 @@ architecture Behavioral of top is
     signal register_read_write_enable : std_logic;
     -- Signal ControlUnit -> Memory
     signal memory_read_write_enable : std_logic;
+    -- Signal to stall
     
 begin
 
@@ -88,6 +89,19 @@ begin
         instruction_out => instruction,
         curr_pc_out => curr_pc_fetch_decode,
         next_pc_out => next_pc_fetch_decode
+    );
+    
+    control_unit: entity work.control_unit
+    port map (
+        -- INPUTS
+        clk => clk,
+        reset => reset,
+        instruction => instruction,
+        
+        -- OUTPUTS
+        program_counter_loader => instruction_load_enable,
+        read_write_enable_register => register_read_write_enable,
+        read_write_enable_memory => memory_read_write_enable
     );
 
   -- Instruction Decode: Decodes the instruction and prepares signals for the ALU

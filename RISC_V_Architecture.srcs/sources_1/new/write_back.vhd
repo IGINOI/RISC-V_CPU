@@ -49,30 +49,34 @@ begin
 
     compute_next_pc: process(clk)
     begin
-        --Assign the value to pc_out
-        if (branch_cond = '1') then
-            if (op_class = "00100" or op_class = "10000") then
-                pc_out <= alu_result;
-            else
+        if rising_edge(clk) then
+            --Assign the value to pc_out
+            if (branch_cond = '1') then
+                if (op_class = "00100" or op_class = "10000") then
+                    pc_out <= alu_result;
+                else
+                    pc_out <= next_pc;
+                end if;
+            else 
                 pc_out <= next_pc;
             end if;
-        else 
-            pc_out <= next_pc;
         end if;
-     end process;
+     end process compute_next_pc;
      
      compute_write_back_value: process(clk)
      begin
-        --Assign the value to rd_value
-        if op_class = "00001" then --ALU operation
-            rd_value <= alu_result;      
-        elsif op_class = "01000" then --LOAD operation
-            rd_value <= mem_out;
-        elsif op_class = "10000" then --JUMP operation
-            rd_value <= next_pc;
-        else
-            rd_value <= (others => '0');  -- STORE & BRANCH
+        if rising_edge(clk) then
+            --Assign the value to rd_value
+            if op_class = "00001" then --ALU operation
+                rd_value <= alu_result;      
+            elsif op_class = "01000" then --LOAD operation
+                rd_value <= mem_out;
+            elsif op_class = "10000" then --JUMP operation
+                rd_value <= next_pc;
+            else
+                rd_value <= (others => '0');  -- STORE & BRANCH
+            end if;
         end if;
-    end process;
+    end process compute_write_back_value;
 
 end Behavioral;

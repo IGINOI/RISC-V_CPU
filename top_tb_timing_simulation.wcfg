@@ -11,14 +11,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,530.001 ns"></ZoomEndTime>
-      <Cursor1Time time="1,000.000 ns"></Cursor1Time>
+      <ZoomEndTime time="146.001 ns"></ZoomEndTime>
+      <Cursor1Time time="60.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="223"></NameColumnWidth>
-      <ValueColumnWidth column_width="82"></ValueColumnWidth>
+      <ValueColumnWidth column_width="78"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="13" />
+   <WVObjectSize size="12" />
    <wvobject fp_name="/top_tb/clk_period" type="other">
       <obj_property name="ElementShortName">clk_period</obj_property>
       <obj_property name="ObjectShortName">clk_period</obj_property>
@@ -33,15 +33,9 @@
       <obj_property name="CustomSignalColor">#FF0000</obj_property>
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
-   <wvobject fp_name="/top_tb/load_enable" type="logic">
-      <obj_property name="ElementShortName">load_enable</obj_property>
-      <obj_property name="ObjectShortName">load_enable</obj_property>
-      <obj_property name="CustomSignalColor">#D2691E</obj_property>
-      <obj_property name="UseCustomSignalColor">true</obj_property>
-   </wvobject>
-   <wvobject fp_name="/top_tb/register_write_enable" type="logic">
-      <obj_property name="ElementShortName">register_write_enable</obj_property>
-      <obj_property name="ObjectShortName">register_write_enable</obj_property>
+   <wvobject fp_name="/top_tb/uut/control_unit/program_counter_loader" type="logic">
+      <obj_property name="ElementShortName">program_counter_loader</obj_property>
+      <obj_property name="ObjectShortName">program_counter_loader</obj_property>
    </wvobject>
    <wvobject fp_name="/top_tb/uut/curr_pc_fetch_decode" type="array">
       <obj_property name="ElementShortName">curr_pc_fetch_decode[31:0]</obj_property>

@@ -76,10 +76,14 @@ begin
             wea => mem_we, --CORRECT THIS, ADD THE OR
             mem_out => mem_out
         );
-
-    branch_cond_out <= branch_cond;
-    next_pc_out <= next_pc;
-    alu_result_out <= alu_result;
-    op_class_out <= op_class;
-
+    
+    forward: process(clk)
+    begin
+        if rising_edge(clk) then
+            branch_cond_out <= branch_cond;
+            next_pc_out <= next_pc;
+            alu_result_out <= alu_result;
+            op_class_out <= op_class;
+        end if;
+     end process forward;
 end Behavioral;

@@ -48,12 +48,12 @@ architecture Behavioral of instruction_memory is
     signal mem : memory_type := (
         -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
         0 => x"00000033",
-        1 => x"00008563",
+        1 => x"00000033",
         2 => x"00000033",
         3 => x"00000033",
-        4 => x"0000000A",
-        5 => x"0000000B",
-        6 => x"0000000C",
+        4 => x"00000033",
+        5 => x"00000033",
+        6 => x"00000033",
         7 => x"0000000D",
         8 => x"0000000E",
         9 => x"0000000F",

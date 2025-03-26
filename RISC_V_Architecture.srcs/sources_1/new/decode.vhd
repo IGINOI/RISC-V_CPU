@@ -88,9 +88,13 @@ architecture Behavioral of decode is
 begin
 
     -- Forward program counters
-    curr_pc_out <= curr_pc_in;
-    next_pc_out <= next_pc_in;
-    
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            curr_pc_out <= curr_pc_in;
+            next_pc_out <= next_pc_in;
+        end if;
+    end process;
     
     --PROCESS (2) -> opcode, funct3 and funct7 extraction
     funct3 <= instruction_in(14 downto 12);
@@ -101,49 +105,50 @@ begin
     --PROCESS (3) -> immediate value re-assemble and 32bits extension
     process(clk)
     begin
-        case opcode is
-            -- I-type instructions
-            when "0010011" | "0000011" | "1100111" =>
-                immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 20)),32));
-                rs_1 <= instruction_in(19 downto 15);
-                rs_2 <= (others => '0');
-                rd <= instruction_in(11 downto 7);
-            
-            -- S-type instructions
-            when "0100011" =>
-                immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 25) & instruction_in(11 downto 7)),32));
-                rs_1 <= instruction_in(19 downto 15);
-                rs_2 <= instruction_in(24 downto 20);
-                rd <= (others => '0');
-            
-            -- B-type instructions
-            when "1100011" =>
-                immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(7) & instruction_in(30 downto 25) & instruction_in(11 downto 8) & "0"),32));
-                rs_1 <= instruction_in(19 downto 15);
-                rs_2 <= instruction_in(24 downto 20);
-                rd <= (others => '0');          
-            
-            -- U-type instructions
-            when "0110111" | "0010111" =>
-                immediate_out <= std_logic_vector(signed(instruction_in(31 downto 12) & "000000000000"));
-                rs_1 <= (others => '0');
-                rs_2 <= (others => '0');
-                rd <= instruction_in(11 downto 7);
-            
-            -- J-type instructions
-            when "1101111" =>
-                immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(19 downto 12) & instruction_in(20) & instruction_in(30 downto 21) & "0"),32));
-                rs_1 <= (others => '0');
-                rs_2 <= (others => '0');
-                rd <= instruction_in(11 downto 7);
+        if rising_edge(clk) then
+            case opcode is
+                -- I-type instructions
+                when "0010011" | "0000011" | "1100111" =>
+                    immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 20)),32));
+                    rs_1 <= instruction_in(19 downto 15);
+                    rs_2 <= (others => '0');
+                    rd <= instruction_in(11 downto 7);
                 
-            when others =>
-                immediate_out <= (others => '0'); -- Default case (e.g. used by R-type instructions)
-                rs_1 <= instruction_in(19 downto 15);
-                rs_2 <= instruction_in(24 downto 20);
-                rd <= instruction_in(11 downto 7);
-
-        end case;
+                -- S-type instructions
+                when "0100011" =>
+                    immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 25) & instruction_in(11 downto 7)),32));
+                    rs_1 <= instruction_in(19 downto 15);
+                    rs_2 <= instruction_in(24 downto 20);
+                    rd <= (others => '0');
+                
+                -- B-type instructions
+                when "1100011" =>
+                    immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(7) & instruction_in(30 downto 25) & instruction_in(11 downto 8) & "0"),32));
+                    rs_1 <= instruction_in(19 downto 15);
+                    rs_2 <= instruction_in(24 downto 20);
+                    rd <= (others => '0');          
+                
+                -- U-type instructions
+                when "0110111" | "0010111" =>
+                    immediate_out <= std_logic_vector(signed(instruction_in(31 downto 12) & "000000000000"));
+                    rs_1 <= (others => '0');
+                    rs_2 <= (others => '0');
+                    rd <= instruction_in(11 downto 7);
+                
+                -- J-type instructions
+                when "1101111" =>
+                    immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(19 downto 12) & instruction_in(20) & instruction_in(30 downto 21) & "0"),32));
+                    rs_1 <= (others => '0');
+                    rs_2 <= (others => '0');
+                    rd <= instruction_in(11 downto 7);
+                    
+                when others =>
+                    immediate_out <= (others => '0'); -- Default case (e.g. used by R-type instructions)
+                    rs_1 <= instruction_in(19 downto 15);
+                    rs_2 <= instruction_in(24 downto 20);
+                    rd <= instruction_in(11 downto 7);
+            end case;
+        end if;
     end process;
     
     
@@ -166,222 +171,223 @@ begin
     -- PROCESS (4) -> intruction decoding    
     process(clk)
     begin
-        case opcode is
-            ------------------------
-            -- R-TYPE INSTRUCTION --
-            ------------------------
-            when "0110011" =>
-                opclass <= "00001";  --Operational type instruction
-                a_sel <= '0'; --use rs1
-                b_sel <= '0'; --use rs2
-                cond_opcode <= "00";
-                case funct3 is
-                    --ADD and SUB and MUL
-                    when "000" =>
-                        case funct7 is
-                            --ADD
-                            when "0000000" =>
-                                alu_opcode <= "0000";
-                            --SUB
-                            when "0100000" =>
-                                alu_opcode <= "0001";
-                            --MUL
-                            when "0000001" =>
-                                alu_opcode <= "0111";
-                            when others =>
-                                alu_opcode <= "0000"; --Default
-                        end case;
-                    --SLL and MULH
-                    when "001" =>
-                        case funct7 is
-                            --SLL
-                            when "0000000" =>
-                                alu_opcode <= "0010";
-                            --MULH
-                            when "0000001" =>
-                                alu_opcode <= "1000";
-                            --DEAFULT
-                            when others =>
-                                alu_opcode <= "0010";
-                        end case;
-                    --SRL and DIVU
-                    when "101" =>
-                        case funct7 is
-                            --SRL
-                            when "0000000" =>
-                                alu_opcode <= "0011";
-                            --DIVU
-                            when "0000001" =>
-                                alu_opcode <= "1010";
-                            --DEAFULT
-                            when others =>
-                                alu_opcode <= "0011";
-                        end case;
-                    --XOR and DIV
-                    when "100" =>
-                        case funct7 is
-                            --XOR
-                            when "0000000" =>
-                                alu_opcode <= "0010";
-                            --DIVs
-                            when "0000001" =>
-                                alu_opcode <= "1000";
-                            --DEAFULT
-                            when others =>
-                                alu_opcode <= "0010";
-                        end case;
-                    --OR
-                    when "110" =>
-                        alu_opcode <= "0101";
-                    --AND
-                    when "111" =>
-                        alu_opcode <= "0110";
-                    --SLT
-                    when "010" =>
-                        alu_opcode <= "1011";
-                    --IN ALL OTHER CASES
-                    when others =>
-                        alu_opcode <= "0000"; -- Default behavior
-                end case;
-                
-            ------------------------
-            -- I-TYPE INSTRUCTION --
-            ------------------------
-            when "0010011" | "0000011" |  "1100111" =>
-                case opcode is
-                    when "0010011" => --Operational instruction 
-                        opclass <= "00001";  --Operational instruction 
-                        a_sel <= '0';  --use rs1    
-                        b_sel <= '1';  --use immediate value 
-                        cond_opcode <= "00";
-                        case funct3 is
-                            --ADDI
-                            when "000" =>
-                                alu_opcode <= "0000";
-                            --SLLI
-                            when "001" =>
-                                alu_opcode <= "0010";
-                            --SRLI
-                            when "101" =>
-                                alu_opcode <= "0011";
-                            --XORI
-                            when "100" =>
-                                alu_opcode <= "0010";
-                            --ORI
-                            when "110" =>
-                                alu_opcode <= "0101";
-                            --ANDI
-                            when "111" =>
-                                alu_opcode <= "0110";
-                            --SLTI
-                            when "010" =>
-                                alu_opcode <= "1011";
-                            when others =>
-                                alu_opcode <= "0000";
-                        end case;
+        if rising_edge(clk) then
+            case opcode is
+                ------------------------
+                -- R-TYPE INSTRUCTION --
+                ------------------------
+                when "0110011" =>
+                    opclass <= "00001";  --Operational type instruction
+                    a_sel <= '0'; --use rs1
+                    b_sel <= '0'; --use rs2
+                    cond_opcode <= "00";
+                    case funct3 is
+                        --ADD and SUB and MUL
+                        when "000" =>
+                            case funct7 is
+                                --ADD
+                                when "0000000" =>
+                                    alu_opcode <= "0000";
+                                --SUB
+                                when "0100000" =>
+                                    alu_opcode <= "0001";
+                                --MUL
+                                when "0000001" =>
+                                    alu_opcode <= "0111";
+                                when others =>
+                                    alu_opcode <= "0000"; --Default
+                            end case;
+                        --SLL and MULH
+                        when "001" =>
+                            case funct7 is
+                                --SLL
+                                when "0000000" =>
+                                    alu_opcode <= "0010";
+                                --MULH
+                                when "0000001" =>
+                                    alu_opcode <= "1000";
+                                --DEAFULT
+                                when others =>
+                                    alu_opcode <= "0010";
+                            end case;
+                        --SRL and DIVU
+                        when "101" =>
+                            case funct7 is
+                                --SRL
+                                when "0000000" =>
+                                    alu_opcode <= "0011";
+                                --DIVU
+                                when "0000001" =>
+                                    alu_opcode <= "1010";
+                                --DEAFULT
+                                when others =>
+                                    alu_opcode <= "0011";
+                            end case;
+                        --XOR and DIV
+                        when "100" =>
+                            case funct7 is
+                                --XOR
+                                when "0000000" =>
+                                    alu_opcode <= "0010";
+                                --DIVs
+                                when "0000001" =>
+                                    alu_opcode <= "1000";
+                                --DEAFULT
+                                when others =>
+                                    alu_opcode <= "0010";
+                            end case;
+                        --OR
+                        when "110" =>
+                            alu_opcode <= "0101";
+                        --AND
+                        when "111" =>
+                            alu_opcode <= "0110";
+                        --SLT
+                        when "010" =>
+                            alu_opcode <= "1011";
+                        --IN ALL OTHER CASES
+                        when others =>
+                            alu_opcode <= "0000"; -- Default behavior
+                    end case;
                     
-                    when "0000011" => --Load instruction
-                        opclass <= "01000";
-                        a_sel <= '0';  --use rs1    
-                        b_sel <= '1';  --use immediate value
+                ------------------------
+                -- I-TYPE INSTRUCTION --
+                ------------------------
+                when "0010011" | "0000011" |  "1100111" =>
+                    case opcode is
+                        when "0010011" => --Operational instruction 
+                            opclass <= "00001";  --Operational instruction 
+                            a_sel <= '0';  --use rs1    
+                            b_sel <= '1';  --use immediate value 
+                            cond_opcode <= "00";
+                            case funct3 is
+                                --ADDI
+                                when "000" =>
+                                    alu_opcode <= "0000";
+                                --SLLI
+                                when "001" =>
+                                    alu_opcode <= "0010";
+                                --SRLI
+                                when "101" =>
+                                    alu_opcode <= "0011";
+                                --XORI
+                                when "100" =>
+                                    alu_opcode <= "0010";
+                                --ORI
+                                when "110" =>
+                                    alu_opcode <= "0101";
+                                --ANDI
+                                when "111" =>
+                                    alu_opcode <= "0110";
+                                --SLTI
+                                when "010" =>
+                                    alu_opcode <= "1011";
+                                when others =>
+                                    alu_opcode <= "0000";
+                            end case;
+                        
+                        when "0000011" => --Load instruction
+                            opclass <= "01000";
+                            a_sel <= '0';  --use rs1    
+                            b_sel <= '1';  --use immediate value
+                            alu_opcode <= "0000";
+                            cond_opcode <= "00";
+                            ---------------------------
+                            -- SOMETHING TO ADD HERE --
+                            ---------------------------
+                            
+                        when "1100111" => --JALR instruction
+                            opclass <= "10000";
+                            a_sel <= '0';  --use rs1   
+                            b_sel <= '1';  --use immediate value
+                            alu_opcode <= "0000";
+                            cond_opcode <= "00";
+                            
+                        when others =>
+                            -- Default behavior for unrecognized opcodes
+                            opclass <= "00000";  -- Set the default to no-op
+                            alu_opcode <= "0000"; -- Default ALU operation
+                            a_sel <= '0';         -- Default selection for ALU operand A
+                            b_sel <= '0';         -- Default selection for ALU operand B
+                            cond_opcode <= "00";  -- Default condition opcode
+                            
+                    end case;
+                    
+                ------------------------
+                -- S-TYPE INSTRUCTION --
+                ------------------------
+                when "0100011" =>
+                    opclass <= "00010";  --Store instruction 
+                    a_sel <= '0'; --use rs1       
+                    b_sel <= '1'; --use immediate value for offset
+                    alu_opcode <= "0000";
+                    cond_opcode <= "00";      
+                
+                ------------------------
+                -- B-TYPE INSTRUCTION --
+                ------------------------
+                when "1100011" =>
+                    opclass <= "00100";  --Branch instruction
+                    a_sel <= '1'; --use program counter
+                    b_sel <= '1'; --use immediate value
+                    alu_opcode <= "0000";
+                    case funct3 is
+                        --BEQ
+                        when "000" =>
+                            cond_opcode <= "00";
+                        --BNE
+                        when "001" =>
+                            cond_opcode <= "01";
+                        --BLT
+                        when "100" =>
+                            cond_opcode <= "10";
+                        --BGE
+                        when "101" =>
+                            cond_opcode <= "11";
+                        when others =>
+                            cond_opcode <= "00"; --default
+                    end case;
+                    
+                ------------------------
+                -- U-TYPE INSTRUCTION --
+                ------------------------
+                when "0110111" | "0010111" =>
+                    if opcode = "0110111" then
+                        opclass <= "00000";
+                        a_sel <= '0';
+                        b_sel <= '0';
                         alu_opcode <= "0000";
                         cond_opcode <= "00";
-                        ---------------------------
-                        -- SOMETHING TO ADD HERE --
-                        ---------------------------
-                        
-                    when "1100111" => --JALR instruction
-                        opclass <= "10000";
-                        a_sel <= '0';  --use rs1   
-                        b_sel <= '1';  --use immediate value
-                        alu_opcode <= "0000";
+                    else
+                        opclass <= "00000";
+                        a_sel <= '1'; --use current pc
+                        b_sel <= '1'; --use immediate value
+                        alu_opcode <= "0000"; --sum
                         cond_opcode <= "00";
-                        
-                    when others =>
-                        -- Default behavior for unrecognized opcodes
-                        opclass <= "00000";  -- Set the default to no-op
-                        alu_opcode <= "0000"; -- Default ALU operation
-                        a_sel <= '0';         -- Default selection for ALU operand A
-                        b_sel <= '0';         -- Default selection for ALU operand B
-                        cond_opcode <= "00";  -- Default condition opcode
-                        
-                end case;
+                    end if;
                 
-            ------------------------
-            -- S-TYPE INSTRUCTION --
-            ------------------------
-            when "0100011" =>
-                opclass <= "00010";  --Store instruction 
-                a_sel <= '0'; --use rs1       
-                b_sel <= '1'; --use immediate value for offset
-                alu_opcode <= "0000";
-                cond_opcode <= "00";      
-            
-            ------------------------
-            -- B-TYPE INSTRUCTION --
-            ------------------------
-            when "1100011" =>
-                opclass <= "00100";  --Branch instruction
-                a_sel <= '1'; --use program counter
-                b_sel <= '1'; --use immediate value
-                alu_opcode <= "0000";
-                case funct3 is
-                    --BEQ
-                    when "000" =>
-                        cond_opcode <= "00";
-                    --BNE
-                    when "001" =>
-                        cond_opcode <= "01";
-                    --BLT
-                    when "100" =>
-                        cond_opcode <= "10";
-                    --BGE
-                    when "101" =>
-                        cond_opcode <= "11";
-                    when others =>
-                        cond_opcode <= "00"; --default
-                end case;
-                
-            ------------------------
-            -- U-TYPE INSTRUCTION --
-            ------------------------
-            when "0110111" | "0010111" =>
-                if opcode = "0110111" then
-                    opclass <= "00000";
-                    a_sel <= '0';
-                    b_sel <= '0';
+                ------------------------
+                -- J-TYPE INSTRUCTION --
+                ------------------------
+                when "1101111" =>
+                    opclass <= "10000";
+                    a_sel <= '1'; --use program counter
+                    b_sel <= '1'; --use immediate
                     alu_opcode <= "0000";
                     cond_opcode <= "00";
-                else
-                    opclass <= "00000";
-                    a_sel <= '1'; --use current pc
-                    b_sel <= '1'; --use immediate value
-                    alu_opcode <= "0000"; --sum
-                    cond_opcode <= "00";
-                end if;
-            
-            ------------------------
-            -- J-TYPE INSTRUCTION --
-            ------------------------
-            when "1101111" =>
-                opclass <= "10000";
-                a_sel <= '1'; --use program counter
-                b_sel <= '1'; --use immediate
-                alu_opcode <= "0000";
-                cond_opcode <= "00";
-            
-            ------------------------
-            -- DAFAULT INTRUCTION --
-            ------------------------
-            when others =>
-                opclass <= "00000";  -- Set default values for outputs
-                alu_opcode <= "0000";
-                a_sel <= '0';
-                b_sel <= '0';
-                cond_opcode <= "00";
                 
-        end case;
+                ------------------------
+                -- DAFAULT INTRUCTION --
+                ------------------------
+                when others =>
+                    opclass <= "00000";  -- Set default values for outputs
+                    alu_opcode <= "0000";
+                    a_sel <= '0';
+                    b_sel <= '0';
+                    cond_opcode <= "00";
+                    
+            end case;
+        end if;
     end process;
-    
-    
+
 end Behavioral;
