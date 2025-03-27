@@ -47,16 +47,18 @@ architecture Behavioral of instruction_memory is
     -- Define the signal of memory_type type
     signal mem : memory_type := (
         -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
-        0 => x"00000033",
-        1 => x"00000033",
-        2 => x"00000033",
-        3 => x"00000033",
-        4 => x"00000033",
-        5 => x"00000033",
-        6 => x"00000033",
-        7 => x"0000000D",
-        8 => x"0000000E",
-        9 => x"0000000F",
+        0  => x"00000513", -- addi a0, x0, 0
+        1  => x"00000593", -- addi a1, x0, 1
+        2  => x"01400613", -- addi a2, x0, 10
+        3  => x"00200693", -- addi a3, x0, 2
+        4  => x"00C68C63", -- beq a3, a2, end
+        5  => x"00B502B3", -- add t0, a0, a1
+        6  => x"00058513", -- add a0, x0, a1
+        7  => x"00028593", -- add a1, x0, t0
+        8  => x"00168693", -- addi a3, a3, 1
+        9  => x"FF5FF06F", -- j loop
+        10 => x"00A00713", -- addi a7, x0, 10
+        11 => x"00000073", -- ecall
         others => x"00000033"
     );
 begin
