@@ -32,16 +32,15 @@ entity decode is
     Port (
         --INPUTS
         clk : in std_logic;
-        next_pc_in : in std_logic_vector(31 downto 0);
         curr_pc_in : in std_logic_vector(31 downto 0);
         instruction_in : in std_logic_vector(31 downto 0);
         
         --comes from lather stages
+        in_rd : in std_logic_vector(4 downto 0);
         write_enable : in std_logic;
         write_back_value : in std_logic_vector(31 downto 0);
         
         --OUTPUTS
-        next_pc_out : out std_logic_vector(31 downto 0);
         curr_pc_out : out std_logic_vector(31 downto 0);
         
         opclass : out std_logic_vector(4 downto 0);
@@ -51,7 +50,11 @@ entity decode is
         cond_opcode : out std_logic_vector(1 downto 0);
         immediate_out: out std_logic_vector(31 downto 0);
         rs1_value: out std_logic_vector(31 downto 0);
-        rs2_value: out std_logic_vector(31 downto 0)
+        rs2_value: out std_logic_vector(31 downto 0);
+        out_rd: out std_logic_vector(4 downto 0);
+        
+        
+        new_signal_register_write: out std_logic
         
         
     );
@@ -61,10 +64,7 @@ architecture Behavioral of decode is
     signal funct3 : std_logic_vector(2 downto 0);
     signal funct7 : std_logic_vector(6 downto 0);
     signal opcode : std_logic_vector(6 downto 0);
-    
-    --signal immediate_fields : std_logic_vector(31 downto 0);
-    
-    signal rd : std_logic_vector(4 downto 0);
+
     signal rs_1 : std_logic_vector(4 downto 0);
     signal rs_2 : std_logic_vector(4 downto 0);
 
@@ -92,7 +92,6 @@ begin
     begin
         if rising_edge(clk) then
             curr_pc_out <= curr_pc_in;
-            next_pc_out <= next_pc_in;
         end if;
     end process;
     
@@ -112,41 +111,41 @@ begin
                     immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 20)),32));
                     rs_1 <= instruction_in(19 downto 15);
                     rs_2 <= (others => '0');
-                    rd <= instruction_in(11 downto 7);
+                    out_rd <= instruction_in(11 downto 7);
                 
                 -- S-type instructions
                 when "0100011" =>
                     immediate_out <= std_logic_vector(resize(signed(instruction_in(31 downto 25) & instruction_in(11 downto 7)),32));
                     rs_1 <= instruction_in(19 downto 15);
                     rs_2 <= instruction_in(24 downto 20);
-                    rd <= (others => '0');
+                    out_rd <= (others => '0');
                 
                 -- B-type instructions
                 when "1100011" =>
                     immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(7) & instruction_in(30 downto 25) & instruction_in(11 downto 8) & "0"),32));
                     rs_1 <= instruction_in(19 downto 15);
                     rs_2 <= instruction_in(24 downto 20);
-                    rd <= (others => '0');          
+                    out_rd <= (others => '0');     
                 
                 -- U-type instructions
                 when "0110111" | "0010111" =>
                     immediate_out <= std_logic_vector(signed(instruction_in(31 downto 12) & "000000000000"));
                     rs_1 <= (others => '0');
                     rs_2 <= (others => '0');
-                    rd <= instruction_in(11 downto 7);
+                    out_rd <= instruction_in(11 downto 7);
                 
                 -- J-type instructions
                 when "1101111" =>
                     immediate_out <= std_logic_vector(resize(signed(instruction_in(31) & instruction_in(19 downto 12) & instruction_in(20) & instruction_in(30 downto 21) & "0"),32));
                     rs_1 <= (others => '0');
                     rs_2 <= (others => '0');
-                    rd <= instruction_in(11 downto 7);
+                    out_rd <= instruction_in(11 downto 7);
                     
                 when others =>
                     immediate_out <= (others => '0'); -- Default case (e.g. used by R-type instructions)
                     rs_1 <= instruction_in(19 downto 15);
                     rs_2 <= instruction_in(24 downto 20);
-                    rd <= instruction_in(11 downto 7);
+                    out_rd <= instruction_in(11 downto 7);
             end case;
         end if;
     end process;
@@ -160,7 +159,7 @@ begin
             
             read_register_1 => rs_1,
             read_register_2 => rs_2,
-            write_register => rd,
+            write_register => in_rd,
             write_back_value => write_back_value,
             
             r1_out => rs1_value,
@@ -181,6 +180,8 @@ begin
                     a_sel <= '0'; --use rs1
                     b_sel <= '0'; --use rs2
                     cond_opcode <= "00";
+                    
+                    new_signal_register_write <= '1';
                     case funct3 is
                         --ADD and SUB and MUL
                         when "000" =>
@@ -260,6 +261,8 @@ begin
                             a_sel <= '0';  --use rs1    
                             b_sel <= '1';  --use immediate value 
                             cond_opcode <= "00";
+                            
+                            new_signal_register_write <= '1';
                             case funct3 is
                                 --ADDI
                                 when "000" =>
@@ -321,7 +324,9 @@ begin
                     a_sel <= '0'; --use rs1       
                     b_sel <= '1'; --use immediate value for offset
                     alu_opcode <= "0000";
-                    cond_opcode <= "00";      
+                    cond_opcode <= "00"; 
+                    
+                    new_signal_register_write <= '0';     
                 
                 ------------------------
                 -- B-TYPE INSTRUCTION --
@@ -331,6 +336,8 @@ begin
                     a_sel <= '1'; --use program counter
                     b_sel <= '1'; --use immediate value
                     alu_opcode <= "0000";
+                    
+                    new_signal_register_write <= '0';
                     case funct3 is
                         --BEQ
                         when "000" =>
@@ -352,6 +359,7 @@ begin
                 -- U-TYPE INSTRUCTION --
                 ------------------------
                 when "0110111" | "0010111" =>
+                    new_signal_register_write <= '1';
                     if opcode = "0110111" then
                         opclass <= "00000";
                         a_sel <= '0';
@@ -375,6 +383,8 @@ begin
                     b_sel <= '1'; --use immediate
                     alu_opcode <= "0000";
                     cond_opcode <= "00";
+                    
+                    new_signal_register_write <= '1';
                 
                 ------------------------
                 -- DAFAULT INTRUCTION --
@@ -385,6 +395,8 @@ begin
                     a_sel <= '0';
                     b_sel <= '0';
                     cond_opcode <= "00";
+                    
+                    new_signal_register_write <= '0';
                     
             end case;
         end if;

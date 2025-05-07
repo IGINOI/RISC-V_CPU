@@ -75,18 +75,9 @@ begin
         
         reset <= '1';
        
-        wait for 2*clk_period;
+        wait for 6*clk_period;
         
-        reset <= '0';
-        
-        wait for 10*clk_period;
-        
-        reset <= '1';
-       
-        wait for 2*clk_period;
-        
-        reset <= '0';
-        
+        reset <= '0';        
         
         wait;
     end process;

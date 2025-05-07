@@ -32,20 +32,20 @@ entity memory_access is
   Port (
     --INPUTS
     clk : in std_logic;
-    
-    branch_cond : in std_logic;
-    next_pc : in std_logic_vector(31 downto 0);
     alu_result : in std_logic_vector(31 downto 0);
     op_class : in std_logic_vector(4 downto 0);
     rs2_value : in std_logic_vector(31 downto 0);
     mem_we : in std_logic; --coming from control path
     
+    in_forward_instruction_write_enable: in std_logic;
+    in_forward_rd : in std_logic_vector(4 downto 0);
+    
     --OUTPUTS
-    branch_cond_out : out std_logic;
-    next_pc_out : out std_logic_vector(31 downto 0);
     alu_result_out : out std_logic_vector(31 downto 0);
-    op_class_out : out std_logic_vector(4 downto 0);
-    mem_out : out std_logic_vector(31 downto 0)
+    mem_out : out std_logic_vector(31 downto 0);
+    
+    out_forward_instruction_write_enable: out std_logic;
+    out_forward_rd : out std_logic_vector(4 downto 0)
     
   );
 end memory_access;
@@ -61,8 +61,12 @@ architecture Behavioral of memory_access is
             dina: in std_logic_vector(31 downto 0);
             wea : in std_logic;
             
+            
+            
             --OUTPUTS
             mem_out : out std_logic_vector(31 downto 0)
+            
+            
         );
     end component;
 begin
@@ -80,10 +84,9 @@ begin
     forward: process(clk)
     begin
         if rising_edge(clk) then
-            branch_cond_out <= branch_cond;
-            next_pc_out <= next_pc;
             alu_result_out <= alu_result;
-            op_class_out <= op_class;
+            out_forward_instruction_write_enable <= in_forward_instruction_write_enable;
+            out_forward_rd <= in_forward_rd;
         end if;
      end process forward;
 end Behavioral;

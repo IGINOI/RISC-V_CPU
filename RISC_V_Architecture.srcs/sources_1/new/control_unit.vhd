@@ -64,7 +64,7 @@ begin
         if rising_edge (clk) then
             if reset = '1' then
                 program_counter_loader <= '0';
-                read_write_enable_register <= '0';
+                read_write_enable_register <= '1';
                 read_write_enable_memory <= '0';
                 stall <= '0';
                 pc_loader_pulse <= '0';
@@ -81,7 +81,7 @@ begin
      end process;
     
     
-    -- Hazard >>> STALL
+    -- Control Hazard >>> STALL THE PIPELINE
     control_hazard: process(clk)
     begin
         if rising_edge(clk) then
@@ -98,6 +98,8 @@ begin
             end if;
         end if;
     end process control_hazard;
+    
+    -- Data Hazard >>> STALL THE PIPELINE
 
 
 end Behavioral;

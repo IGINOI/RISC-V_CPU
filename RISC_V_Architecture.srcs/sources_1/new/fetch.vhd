@@ -34,11 +34,11 @@ entity fetch is
         clk : in std_logic;
         reset : in std_logic;
         load_enable : in std_logic;
-        pc_in : in std_logic_vector(31 downto 0); --our memory uses 1024 words (10bits)
+        branch_cond : in std_logic;
+        alu_result : in std_logic_vector(31 downto 0); --the memory uses 1024 words (10bits)
         
         --OUTPUTS
         instruction_out : out std_logic_vector(31 downto 0);
-        next_pc_out : out std_logic_vector(31 downto 0);
         curr_pc_out : out std_logic_vector(31 downto 0)
     );
 end fetch;
@@ -47,6 +47,7 @@ architecture Behavioral of fetch is
     
     --Used to address the instruction memory
     signal current_pc : std_logic_vector(31 downto 0);
+    signal next_pc : std_logic_vector(31 downto 0);
     
     --Intruction memory component
     component instruction_memory
@@ -60,22 +61,31 @@ architecture Behavioral of fetch is
     end component;
 
 begin
-
     
     load_reset: process (clk)
     begin
         -- I want to make it synchronous. So I check the clk as first thing
         if rising_edge(clk) then
+            -- MANAGE RESET
             if reset = '1' then
                 current_pc <= (others => '0');  -- If reset is clicked, the pc goes to 0
                 curr_pc_out <= (others => '0');   --Also the current pc goes to 0
-                next_pc_out <= (others => '0');
-                next_pc_out(0) <= '1';   --Next pc instead goes to 1
+                next_pc <= (others => '0');
+                next_pc(0) <= '1';
+            -- MANAGE LOAD ENABLE
             else 
                 if load_enable = '1' then
-                    current_pc <= pc_in;
-                    curr_pc_out <= pc_in;
-                    next_pc_out <= std_logic_vector(unsigned(pc_in) + 1);                    
+                    -- JUMPING
+                    if (branch_cond = '1') then
+                        current_pc <= alu_result;
+                        curr_pc_out <= alu_result;
+                        next_pc <= std_logic_vector(unsigned(alu_result) + 1);
+                    -- NOT JUMPING
+                    else 
+                        current_pc <= next_pc;
+                        curr_pc_out <= next_pc;
+                        next_pc <= std_logic_vector(unsigned(next_pc) + 1);
+                    end if;
                 end if;
             end if;
         end if; 

@@ -47,27 +47,33 @@ architecture Behavioral of data_memory is
     type memory_type is array(0 to 4095) of std_logic_vector(31 downto 0);
     -- Define the signal of memory_type type
     signal data_file : memory_type := (
-        -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
         0 => x"00000000", -- always 0
-        1 => x"00000001",
-        2 => x"00000002",
-        3 => x"00000003",
-        4 => x"00000004",
-        5 => x"00000005",
-        6 => x"00000006",
-        7 => x"00000007",
-        8 => x"00000008",
-        9 => x"00000009",
+        1 => x"00000000",
+        2 => x"00000000",
+        3 => x"00000000",
+        4 => x"00000000",
+        5 => x"00000000",
+        6 => x"00000000",
+        7 => x"00000000",
+        8 => x"00000000",
+        9 => x"00000000",
         others => x"00000000"
     );
 begin
+
     process (clk)
     begin
-        if (wea = '0') then --we are reading 
-            mem_out <= data_file(to_integer(unsigned(addra)));
-        else --we are writing
-            data_file(to_integer(unsigned(addra))) <= dina;
-        end if;
+        if rising_edge(clk) then
+            if (to_integer(unsigned(addra)) > 0 and to_integer(unsigned(addra)) <= 4095) then
+                if (wea = '0') then --we are reading 
+                    mem_out <= data_file(to_integer(unsigned(addra)));
+                else --we are writing
+                    data_file(to_integer(unsigned(addra))) <= dina;
+                end if;
+            else
+                mem_out <= (others => '0');
+            end if;
+         end if;
     end process;
 
 end Behavioral;

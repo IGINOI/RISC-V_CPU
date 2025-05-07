@@ -45,22 +45,118 @@ architecture Behavioral of instruction_memory is
     -- Define a memory array (custom type) for instructions (size: 1024 instructions each of 32bit)
     type memory_type is array(0 to 1023) of std_logic_vector(31 downto 0);
     -- Define the signal of memory_type type
+    
+    
+    -- ADD VERSION
+--    signal mem : memory_type := (
+--        0  => x"00000033", -- addi a0, x0, 0   (Fib(0) = 0)
+--        1  => x"00000033", -- addi a1, x0, 1   (Fib(1) = 1)
+--        2  => x"00000033", -- addi a2, x0, 20  (Set number of terms to 20)
+--        3  => x"00000033", -- addi a3, x0, 2   (Counter starts at 2)
+--        4  => x"00000033", -- beq a3, a2, end  (Exit if counter == a2)
+--        5  => x"00000033", -- add t0, a0, a1   (t0 = Fib(n-1) + Fib(n-2))
+--        6  => x"00000033", -- add a0, x0, a1   (a0 = a1)
+--        7  => x"00000033", -- add a1, x0, t0   (a1 = t0)
+--        8  => x"00000033", -- addi a3, a3, 1   (counter++)
+--        9  => x"00000033", -- j loop           (Jump back to loop)
+--        10 => x"00000033", -- addi a7, x0, 10  (Exit syscall)
+--        11 => x"00000033", -- ecall            (Terminate program)
+--        others => x"00000033" -- NOP
+--    );
+    
+    
+--    FIRST VERSION FOR FIBONACCI
+--    signal mem : memory_type := (
+--        0  => x"00000513", -- addi a0, x0, 0   (Fib(0) = 0)
+--        1  => x"00000593", -- addi a1, x0, 1   (Fib(1) = 1)
+--        2  => x"01400613", -- addi a2, x0, 20  (Set number of terms to 20)
+--        3  => x"00200693", -- addi a3, x0, 2   (Counter starts at 2)
+--        4  => x"00C68C63", -- beq a3, a2, end  (Exit if counter == a2)
+--        5  => x"00B502B3", -- add t0, a0, a1   (t0 = Fib(n-1) + Fib(n-2))
+--        6  => x"00058513", -- add a0, x0, a1   (a0 = a1)
+--        7  => x"00028593", -- add a1, x0, t0   (a1 = t0)
+--        8  => x"00168693", -- addi a3, a3, 1   (counter++)
+--        9  => x"FF5FF06F", -- j loop           (Jump back to loop)
+--        10 => x"00A00713", -- addi a7, x0, 10  (Exit syscall)
+--        11 => x"00000073", -- ecall            (Terminate program)
+--        others => x"00000033" -- NOP
+--    );
+
+--    SECOND VERSION FOR FIBONACCI
+--    signal mem : memory_type := (
+--        0  => x"00000513", -- addi a0, x0, 0   (Fib(0) = 0)
+--        1  => x"00000593", -- addi a1, x0, 1   (Fib(1) = 1)
+        
+--        -- Compute Fib(2) = Fib(0) + Fib(1)
+--        2  => x"00B502B3", -- add t0, a0, a1   (t0 = a0 + a1)
+--        3  => x"00058513", -- add a0, x0, a1   (a0 = a1)
+--        4  => x"00028593", -- add a1, x0, t0   (a1 = t0)
+    
+--        -- Compute Fib(3) = Fib(1) + Fib(2)
+--        5  => x"00B502B3", -- add t0, a0, a1
+--        6  => x"00058513", -- add a0, x0, a1
+--        7  => x"00028593", -- add a1, x0, t0
+    
+--        -- Compute Fib(4) = Fib(2) + Fib(3)
+--        8  => x"00B502B3", -- add t0, a0, a1
+--        9  => x"00058513", -- add a0, x0, a1
+--        10 => x"00028593", -- add a1, x0, t0
+    
+--        -- Compute Fib(5) = Fib(3) + Fib(4)
+--        11 => x"00B502B3", -- add t0, a0, a1
+--        12 => x"00058513", -- add a0, x0, a1
+--        13 => x"00028593", -- add a1, x0, t0
+        
+--        -- Compute Fib(5) = Fib(3) + Fib(4)
+--        14 => x"00B502B3", -- add t0, a0, a1
+--        15 => x"00058513", -- add a0, x0, a1
+--        16 => x"00028593", -- add a1, x0, t0
+        
+        
+--        -- Compute Fib(5) = Fib(3) + Fib(4)
+--        17 => x"00B502B3", -- add t0, a0, a1
+--        18 => x"00058513", -- add a0, x0, a1
+--        19 => x"00028593", -- add a1, x0, t0
+        
+        
+--        -- Compute Fib(5) = Fib(3) + Fib(4)
+--        20 => x"00B502B3", -- add t0, a0, a1
+--        21 => x"00058513", -- add a0, x0, a1
+--        22 => x"00028593", -- add a1, x0, t0
+    
+--        -- Terminate program
+--        23 => x"00A00713", -- addi a7, x0, 10  (Exit syscall)
+--        24 => x"00000073", -- ecall            (Terminate program)
+        
+--        others => x"00000033" -- NOP
+--    );
+
+    -- SIMPLE SUM TO TEST
     signal mem : memory_type := (
-        -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
-        0  => x"00000513", -- addi a0, x0, 0
-        1  => x"00000593", -- addi a1, x0, 1
-        2  => x"01400613", -- addi a2, x0, 10
-        3  => x"00200693", -- addi a3, x0, 2
-        4  => x"00C68C63", -- beq a3, a2, end
-        5  => x"00B502B3", -- add t0, a0, a1
-        6  => x"00058513", -- add a0, x0, a1
-        7  => x"00028593", -- add a1, x0, t0
-        8  => x"00168693", -- addi a3, a3, 1
-        9  => x"FF5FF06F", -- j loop
-        10 => x"00A00713", -- addi a7, x0, 10
-        11 => x"00000073", -- ecall
+        0 => x"00100513",   -- addi a0, x0, 1        x10 - 1
+        1 => x"00200593",   -- addi a1, x0, 2        x11 - 2
+        2 => x"00300613",   -- addi  a2, x0, 3       x12 - 3
+        3 => x"00400693",   -- addi a3, x0, 4        x13 - 4
+        4 => x"00000033",
+        5 => x"00000033",
+        6 => x"00000033",
+        7 => x"00000033",
+        8 => x"00D60733",  -- add a4, a2, a3        x14 - 7
+        9 => x"00000033",
+        10 => x"00000033",
+        11 => x"00000033",
+        12 => x"00000033",
+        13 => x"00D707B3", -- add a5, a4, a3        x14 - 11
+        14 => x"00000033",
+        15 => x"00000033",
+        16 => x"00000033",
+        17 => x"00000033",
+        18 => x"0017A023", -- sw a5, 0(x1)
         others => x"00000033"
     );
+
+
+
 begin
     -- Output the selected instruction by the input
     process (clk)
