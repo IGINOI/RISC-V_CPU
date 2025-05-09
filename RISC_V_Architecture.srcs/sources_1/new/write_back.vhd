@@ -56,16 +56,19 @@ begin
                 rd_value <= alu_result;      
             elsif op_class = "01000" then --LOAD operation
                 rd_value <= mem_out;
-            elsif op_class = "10000" then --JUMP operation
-                --rd_value <= next_pc;
             else
                 rd_value <= (others => '0');  -- STORE & BRANCH
             end if;
-            
+        end if;
+     end process;
+     
+     send_back_signals: process(clk)
+     begin
+        if rising_edge(clk) then  
             -- Forward some signals
             out_forward_instruction_write_enable <= in_forward_instruction_write_enable;
             out_forward_rd <= in_forward_rd;
         end if;
-    end process compute_write_back_value;
+    end process;
 
 end Behavioral;

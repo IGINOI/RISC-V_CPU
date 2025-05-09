@@ -41,37 +41,39 @@ architecture Behavioral of top is
     ----------------------------
     -- SIGNALS BETWEEN STAGES --
     ----------------------------
-    -- Signals Fetch -> Decode
-    signal curr_pc_fetch_decode, next_pc_fetch_decode : std_logic_vector(31 downto 0);
+    -- Fetch -> Decode
+    signal curr_pc_fetch_decode : std_logic_vector(31 downto 0);
     signal instruction : std_logic_vector(31 downto 0);
     
-    -- Signals Decode -> Execute
-    signal curr_pc_decode_execute, next_pc_decode_execute : std_logic_vector(31 downto 0);
+    -- Decode -> Execute
+    signal curr_pc_decode_execute : std_logic_vector(31 downto 0);
     signal rs1_value, rs2_value : std_logic_vector(31 downto 0);
     signal immediate_value : std_logic_vector(31 downto 0);
     signal cond_opcode : std_logic_vector(1 downto 0);
     signal alu_opcode : std_logic_vector(3 downto 0);
     signal a_sel, b_sel : std_logic;
-    signal op_class : std_logic_vector(4 downto 0);
-    signal register_write_enable_de : std_logic;
     signal rd_forward_de : std_logic_vector(4 downto 0);
+    signal forward_op_class_de : std_logic_vector(4 downto 0);
     
-    -- Signals Execute -> Memory
-    signal curr_pc_execute_memory, next_pc_execute_memory : std_logic_vector(31 downto 0);    
+    -- Execute -> Memory
+    signal curr_pc_execute_memory : std_logic_vector(31 downto 0);    
     signal branch_cond : std_logic;
     signal alu_result : std_logic_vector(31 downto 0) := (others => '0');
-    signal op_class_ex_me: std_logic_vector(4 downto 0);
-    signal register_write_enable_em : std_logic;
+    signal register_read_write_enable_em : std_logic;
+    signal memory_read_write_enable_em : std_logic;
     signal rd_forward_em : std_logic_vector(4 downto 0);
+    signal rs2_value_forward_em : std_logic_vector(31 downto 0);
+    signal forward_op_class_em : std_logic_vector(4 downto 0);
     
-    -- Signals Memory -> WriteBack
+    -- Memory -> WriteBack
     signal next_pc_memory_writeb : std_logic_vector(31 downto 0);
     signal mem_out : std_logic_vector(31 downto 0);
     signal alu_result_mem_wb: std_logic_vector(31 downto 0);
     signal register_write_enable_mw : std_logic;
     signal rd_forward_mw : std_logic_vector(4 downto 0);
+    signal forward_op_class_mw : std_logic_vector(4 downto 0);
     
-    -- Signals WriteBack -> Fetch/Decode
+    -- WriteBack -> Fetch/Decode
     signal next_final_pc : std_logic_vector(31 downto 0);
     signal write_back_value: std_logic_vector(31 downto 0);
     signal register_write_enable_wd : std_logic;
@@ -82,16 +84,14 @@ architecture Behavioral of top is
     -------------------------------
     -- Signals ControlUnit -> Fetch
     signal instruction_load_enable : std_logic;
-    -- Signal ControlUnit -> Decode
-    signal register_read_write_enable : std_logic;
-    -- Signal ControlUnit -> Memory
-    signal memory_read_write_enable : std_logic;
-    -- Signal to stall
+    -- Signal ControlUnit -> Execute
+    signal register_read_write_enable_ce : std_logic;
+    signal memory_read_write_enable_ce : std_logic;
     
 begin
     
     -----------------------
-    -- Instruction Fetch --
+    -- FETCH iNSTRUCTION --
     -----------------------
     fetch_inst : entity work.fetch
     port map (
@@ -108,7 +108,7 @@ begin
     );
  
     ------------------
-    -- Control Unit --
+    -- CONTROL UNIT --
     ------------------   
     control_unit: entity work.control_unit
     port map (
@@ -119,8 +119,8 @@ begin
         
         -- OUTPUTS
         program_counter_loader => instruction_load_enable,
-        read_write_enable_register => register_read_write_enable,
-        read_write_enable_memory => memory_read_write_enable
+        read_write_enable_register => register_read_write_enable_ce,
+        read_write_enable_memory => memory_read_write_enable_ce
     );
 
     ------------------------
@@ -132,12 +132,12 @@ begin
         clk => clk,
         instruction_in => instruction,
         curr_pc_in => curr_pc_fetch_decode,
-        write_enable => register_write_enable_wd,
+        register_write_enable => register_write_enable_wd,
         write_back_value => write_back_value,
     
         -- OUTPUTS
         curr_pc_out => curr_pc_decode_execute,
-        opclass => op_class,
+        opclass => forward_op_class_de,
         alu_opcode => alu_opcode,
         a_sel => a_sel,
         b_sel => b_sel,
@@ -146,9 +146,8 @@ begin
         rs1_value => rs1_value,
         rs2_value => rs2_value,
         
-        -- FORWARD LOGIC        
-        new_signal_register_write => register_write_enable_de,
-        in_rd => rd_forward_wd,
+        -- FORWARD LOGIC
+        rd_address => rd_forward_wd,
         out_rd => rd_forward_de
     );
 
@@ -160,7 +159,7 @@ begin
         -- INPUTS
         clk => clk,
         reset => reset,
-        op_class => op_class,
+        in_op_class => forward_op_class_de,
         
         rs1_value => rs1_value,
         rs2_value => rs2_value,
@@ -173,17 +172,19 @@ begin
         
         -- OUTPUTS
         branch_cond => branch_cond,
-        op_class_ex_me => op_class_ex_me, 
+        out_op_class => forward_op_class_em, 
         alu_result => alu_result,
         
         
         --FORWARD LOGIC
-        -- are these really needed?
         curr_pc_out => curr_pc_execute_memory,
-        in_forward_instruction_write_enable => register_write_enable_de,
-        out_forward_instruction_write_enable => register_write_enable_em,
+        in_forward_instruction_write_enable => register_read_write_enable_ce,
+        out_forward_instruction_write_enable => register_read_write_enable_em,
+        in_forward_memory_write_enable => memory_read_write_enable_ce,
+        out_forward_memory_write_enable => memory_read_write_enable_em,
         in_forward_rd => rd_forward_de,
-        out_forward_rd => rd_forward_em
+        out_forward_rd => rd_forward_em,
+        out_forward_rs2_value => rs2_value_forward_em
         
     );
 
@@ -196,19 +197,19 @@ begin
         clk => clk,
         alu_result => alu_result,
         rs2_value => rs2_value,
-        mem_we => memory_read_write_enable,
-        op_class => op_class_ex_me,
+        mem_we => memory_read_write_enable_em,
         
         -- OUTPUT
         mem_out => mem_out,
         
         -- FORWARD LOGIC
-        -- Are these really needed?
         alu_result_out => alu_result_mem_wb,
+        in_forward_instruction_write_enable => register_read_write_enable_em,
         out_forward_instruction_write_enable => register_write_enable_mw,
-        in_forward_instruction_write_enable => register_write_enable_em,
         in_forward_rd => rd_forward_em,
-        out_forward_rd => rd_forward_mw
+        out_forward_rd => rd_forward_mw,
+        in_opclass => forward_op_class_em,
+        out_opclass => forward_op_class_mw
     );
 
     ----------------------------
@@ -219,7 +220,7 @@ begin
         -- INPUTS
         clk => clk,
         alu_result => alu_result_mem_wb,
-        op_class => op_class,
+        op_class => forward_op_class_mw,
         mem_out => mem_out,
         
         -- OUTPUTS

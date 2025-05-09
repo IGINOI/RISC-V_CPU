@@ -33,32 +33,33 @@ entity execute is
     --INPUTS
     clk : in std_logic;
     reset : in std_logic;
+    a_sel : in std_logic;
     rs1_value : in std_logic_vector(31 downto 0);
+    immediate_value : in std_logic_vector(31 downto 0);
+    b_sel : in std_logic;
     rs2_value : in std_logic_vector(31 downto 0);
-    
+    curr_pc : in std_logic_vector(31 downto 0);
     cond_opcode : in std_logic_vector(1 downto 0);
     alu_opcode : in std_logic_vector(3 downto 0);
-    op_class : in std_logic_vector(4 downto 0);
     
-    curr_pc : in std_logic_vector(31 downto 0);
     
-    immediate_value : in std_logic_vector(31 downto 0);
     
-    a_sel : in std_logic;
-    b_sel : in std_logic;
-    
-    in_forward_instruction_write_enable : in std_logic;
-    in_forward_rd : in std_logic_vector(4 downto 0);
-    
+     
     --OUTPUTS
-    curr_pc_out : out std_logic_vector(31 downto 0);
-    op_class_ex_me: in std_logic_vector(4 downto 0);
-    
     branch_cond : out std_logic;
     alu_result : out std_logic_vector(31 downto 0);
-    
+      
+    -- FORWARD
+    curr_pc_out : out std_logic_vector(31 downto 0);
+    in_forward_instruction_write_enable : in std_logic;
     out_forward_instruction_write_enable : out std_logic;
-    out_forward_rd : out std_logic_vector(4 downto 0)
+    in_forward_memory_write_enable : in std_logic;
+    out_forward_memory_write_enable : out std_logic;
+    in_forward_rd : in std_logic_vector(4 downto 0);
+    out_forward_rd : out std_logic_vector(4 downto 0);
+    out_forward_rs2_value : out std_logic_vector(31 downto 0);
+    in_op_class : in std_logic_vector(4 downto 0);
+    out_op_class: out std_logic_vector(4 downto 0)
     
     
   );
@@ -69,17 +70,19 @@ architecture Behavioral of execute is
     signal alu_in1 : std_logic_vector(31 downto 0);
     signal alu_in2 : std_logic_vector(31 downto 0);
     signal full_result : unsigned(63 downto 0);
-    
     signal branch_condition_result: std_logic;
     
 begin
     
-    process(clk)
+    forward: process(clk)
     begin
         if rising_edge(clk) then
             curr_pc_out <= curr_pc;
             out_forward_instruction_write_enable <= in_forward_instruction_write_enable;
+            out_forward_memory_write_enable <= in_forward_memory_write_enable;
             out_forward_rd <= in_forward_rd;
+            out_forward_rs2_value <= rs2_value;
+            out_op_class <= in_op_class;
         end if;
     end process;
     
@@ -145,7 +148,7 @@ begin
     process (branch_condition_result)
     begin
         if branch_condition_result = '1' then
-            if (op_class = "00100" or op_class = "10000") then
+            if (in_op_class = "00100" or in_op_class = "10000") then
                 branch_cond <= '1';
             else
                 branch_cond <= '0';

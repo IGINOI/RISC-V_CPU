@@ -32,17 +32,9 @@ entity decode is
     Port (
         --INPUTS
         clk : in std_logic;
-        curr_pc_in : in std_logic_vector(31 downto 0);
         instruction_in : in std_logic_vector(31 downto 0);
         
-        --comes from lather stages
-        in_rd : in std_logic_vector(4 downto 0);
-        write_enable : in std_logic;
-        write_back_value : in std_logic_vector(31 downto 0);
-        
         --OUTPUTS
-        curr_pc_out : out std_logic_vector(31 downto 0);
-        
         opclass : out std_logic_vector(4 downto 0);
         alu_opcode : out std_logic_vector(3 downto 0);
         a_sel : out std_logic; --used to select the first operand in the ALU
@@ -53,8 +45,15 @@ entity decode is
         rs2_value: out std_logic_vector(31 downto 0);
         out_rd: out std_logic_vector(4 downto 0);
         
+        -- FORWARD SIGNALS
+        curr_pc_in : in std_logic_vector(31 downto 0);
+        curr_pc_out : out std_logic_vector(31 downto 0);
         
-        new_signal_register_write: out std_logic
+        -- FROM SUBSEQUENT STAGES
+        register_write_enable : in std_logic;
+        rd_address : in std_logic_vector(4 downto 0);
+        write_back_value : in std_logic_vector(31 downto 0)
+        
         
         
     );
@@ -76,7 +75,7 @@ architecture Behavioral of decode is
             
             read_register_1 : in std_logic_vector(4 downto 0);
             read_register_2 : in std_logic_vector(4 downto 0);
-            write_register : in std_logic_vector(4 downto 0);
+            write_register_address : in std_logic_vector(4 downto 0);
             write_back_value : in std_logic_vector(31 downto 0);  --write back register from memory
             
             --outputs
@@ -95,16 +94,20 @@ begin
         end if;
     end process;
     
-    --PROCESS (2) -> opcode, funct3 and funct7 extraction
-    funct3 <= instruction_in(14 downto 12);
-    funct7 <= instruction_in(31 downto 25);
-    opcode <= instruction_in(6 downto 0);
-    
+    -- PROCESS (2) -> opcode, funct3 and funct7 extraction
+    extract_info: process(clk)
+    begin
+        funct3 <= instruction_in(14 downto 12);
+        funct7 <= instruction_in(31 downto 25);
+        opcode <= instruction_in(6 downto 0);
+    end process;
     
     --PROCESS (3) -> immediate value re-assemble and 32bits extension
     process(clk)
     begin
         if rising_edge(clk) then
+            
+            
             case opcode is
                 -- I-type instructions
                 when "0010011" | "0000011" | "1100111" =>
@@ -154,12 +157,12 @@ begin
     --Register Memory instantiation
     reg_mem_instantiation : register_memory
         port map (
+            -- INPUT
             clk => clk,
-            write_enable => write_enable,
-            
+            write_enable => register_write_enable,
             read_register_1 => rs_1,
             read_register_2 => rs_2,
-            write_register => in_rd,
+            write_register_address => rd_address,
             write_back_value => write_back_value,
             
             r1_out => rs1_value,
@@ -180,8 +183,6 @@ begin
                     a_sel <= '0'; --use rs1
                     b_sel <= '0'; --use rs2
                     cond_opcode <= "00";
-                    
-                    new_signal_register_write <= '1';
                     case funct3 is
                         --ADD and SUB and MUL
                         when "000" =>
@@ -262,7 +263,6 @@ begin
                             b_sel <= '1';  --use immediate value 
                             cond_opcode <= "00";
                             
-                            new_signal_register_write <= '1';
                             case funct3 is
                                 --ADDI
                                 when "000" =>
@@ -325,8 +325,6 @@ begin
                     b_sel <= '1'; --use immediate value for offset
                     alu_opcode <= "0000";
                     cond_opcode <= "00"; 
-                    
-                    new_signal_register_write <= '0';     
                 
                 ------------------------
                 -- B-TYPE INSTRUCTION --
@@ -337,7 +335,6 @@ begin
                     b_sel <= '1'; --use immediate value
                     alu_opcode <= "0000";
                     
-                    new_signal_register_write <= '0';
                     case funct3 is
                         --BEQ
                         when "000" =>
@@ -359,7 +356,7 @@ begin
                 -- U-TYPE INSTRUCTION --
                 ------------------------
                 when "0110111" | "0010111" =>
-                    new_signal_register_write <= '1';
+                
                     if opcode = "0110111" then
                         opclass <= "00000";
                         a_sel <= '0';
@@ -383,8 +380,6 @@ begin
                     b_sel <= '1'; --use immediate
                     alu_opcode <= "0000";
                     cond_opcode <= "00";
-                    
-                    new_signal_register_write <= '1';
                 
                 ------------------------
                 -- DAFAULT INTRUCTION --
@@ -395,8 +390,6 @@ begin
                     a_sel <= '0';
                     b_sel <= '0';
                     cond_opcode <= "00";
-                    
-                    new_signal_register_write <= '0';
                     
             end case;
         end if;

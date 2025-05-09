@@ -32,10 +32,9 @@ entity data_memory is
   Port (
     --INPUTS
     clk : in std_logic;
-    
-    addra : in std_logic_vector(31 downto 0);
-    dina: in std_logic_vector(31 downto 0);
-    wea : in std_logic;
+    read_write_enable : in std_logic;
+    memory_address : in std_logic_vector(31 downto 0); -- alu result
+    write_value: in std_logic_vector(31 downto 0); -- register 2
     
     --OUTPUTS
     mem_out : out std_logic_vector(31 downto 0)
@@ -61,14 +60,18 @@ architecture Behavioral of data_memory is
     );
 begin
 
+
+
+---- CHECK THIS PROCESS: PROBABLY IT IS VERY WRONG
+
     process (clk)
     begin
         if rising_edge(clk) then
-            if (to_integer(unsigned(addra)) > 0 and to_integer(unsigned(addra)) <= 4095) then
-                if (wea = '0') then --we are reading 
-                    mem_out <= data_file(to_integer(unsigned(addra)));
+            if (to_integer(unsigned(memory_address)) > 0 and to_integer(unsigned(memory_address)) <= 4095) then
+                if (read_write_enable = '0') then --we are reading 
+                    mem_out <= data_file(to_integer(unsigned(memory_address)));
                 else --we are writing
-                    data_file(to_integer(unsigned(addra))) <= dina;
+                    data_file(to_integer(unsigned(memory_address))) <= write_value;
                 end if;
             else
                 mem_out <= (others => '0');

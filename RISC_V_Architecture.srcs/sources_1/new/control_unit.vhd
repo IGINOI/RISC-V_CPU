@@ -55,16 +55,19 @@ architecture Behavioral of control_unit is
 begin
     
     -- Decomposing instruction.
-    funct3 <= instruction(14 downto 12);
-    funct7 <= instruction(31 downto 25);
-    opcode <= instruction(6 downto 0);
+    decomposition: process(clk)
+    begin
+        funct3 <= instruction(14 downto 12);
+        funct7 <= instruction(31 downto 25);
+        opcode <= instruction(6 downto 0);
+    end process;
     
     rst: process(clk)
     begin
         if rising_edge (clk) then
             if reset = '1' then
                 program_counter_loader <= '0';
-                read_write_enable_register <= '1';
+                read_write_enable_register <= '0';
                 read_write_enable_memory <= '0';
                 stall <= '0';
                 pc_loader_pulse <= '0';
@@ -76,6 +79,67 @@ begin
                     pc_loader_pulse <= '0';
                     program_counter_loader <= '0';
                 end if;
+                
+                ----- PROVA
+                case opcode is
+                    ------------------------
+                    -- R-TYPE INSTRUCTION --
+                    ------------------------
+                    when "0110011" =>
+                        read_write_enable_register <= '1'; -- 0 read, 1 write
+                        read_write_enable_memory <= '0'; -- 0 read, 1 write
+                    
+                    ------------------------
+                    -- I-TYPE INSTRUCTION --
+                    ------------------------
+                    when "0010011" | "0000011" |  "1100111" =>
+                        read_write_enable_register <= '1';
+                        read_write_enable_memory <= '0';
+                    
+                    ------------------------
+                    -- S-TYPE INSTRUCTION --
+                    ------------------------
+                    when "0100011" =>
+                        read_write_enable_register <= '0';
+                        read_write_enable_memory <= '1';
+                    
+                    ------------------------
+                    -- B-TYPE INSTRUCTION --
+                    ------------------------
+                    when "1100011" =>
+                        read_write_enable_register <= '0';
+                        read_write_enable_memory <= '0';
+                        
+                    ------------------------
+                    -- U-TYPE INSTRUCTION --
+                    ------------------------
+                    when "0110111" | "0010111" =>
+                        read_write_enable_register <= '1';
+                        read_write_enable_memory <= '0';
+                    
+                    ------------------------
+                    -- J-TYPE INSTRUCTION --
+                    ------------------------
+                    when "1101111" =>
+                        read_write_enable_register <= '1';
+                        read_write_enable_memory <= '0';
+                    
+                    ------------------------
+                    -- DAFAULT INTRUCTION --
+                    ------------------------
+                    when others =>
+                        read_write_enable_register <= '0';
+                        read_write_enable_memory <= '0';
+                end case;
+                
+                
+                ------ FINE PROVA
+                
+                
+                
+                
+                
+                
             end if;
          end if;
      end process;
