@@ -62,7 +62,7 @@ begin
         opcode <= instruction(6 downto 0);
     end process;
     
-    rst: process(clk)
+   process(clk)
     begin
         if rising_edge (clk) then
             if reset = '1' then
@@ -80,7 +80,6 @@ begin
                     program_counter_loader <= '0';
                 end if;
                 
-                ----- PROVA
                 case opcode is
                     ------------------------
                     -- R-TYPE INSTRUCTION --
@@ -131,15 +130,6 @@ begin
                         read_write_enable_register <= '0';
                         read_write_enable_memory <= '0';
                 end case;
-                
-                
-                ------ FINE PROVA
-                
-                
-                
-                
-                
-                
             end if;
          end if;
      end process;

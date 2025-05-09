@@ -53,7 +53,7 @@ architecture Behavioral of register_memory is
     signal register_file : memory_type := (
         -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
         0 => x"00000000", -- always 0
-        1 => x"00000001",
+        1 => x"00000000",
         2 => x"00000000",
         3 => x"00000000",
         4 => x"00000000",

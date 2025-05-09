@@ -83,56 +83,56 @@ architecture Behavioral of instruction_memory is
 --    );
 
 --    SECOND VERSION FOR FIBONACCI
---    signal mem : memory_type := (
---        0  => x"00000513", -- addi a0, x0, 0   (Fib(0) = 0)
---        1  => x"00000593", -- addi a1, x0, 1   (Fib(1) = 1)
+    signal mem : memory_type := (
+        5  => x"00100593", -- addi a1, x0, 1   (Fib(0) = 0)
+        10  => x"00100613", -- addi a2, x0, 1   (Fib(1) = 1)
         
---        -- Compute Fib(2) = Fib(0) + Fib(1)
---        2  => x"00B502B3", -- add t0, a0, a1   (t0 = a0 + a1)
---        3  => x"00058513", -- add a0, x0, a1   (a0 = a1)
---        4  => x"00028593", -- add a1, x0, t0   (a1 = t0)
+        -- Compute Fib(2) = Fib(0) + Fib(1)
+        15  => x"00C586B3", -- add a3, a1, a2
+        20  => x"00C005B3", -- add a1, x0, a2
+        25  => x"00D00633", -- add a2, x0, a3
     
---        -- Compute Fib(3) = Fib(1) + Fib(2)
---        5  => x"00B502B3", -- add t0, a0, a1
---        6  => x"00058513", -- add a0, x0, a1
---        7  => x"00028593", -- add a1, x0, t0
+        -- Compute Fib(3) = Fib(1) + Fib(2)
+        30  => x"00C586B3",
+        35  => x"00C005B3",
+        40  => x"00D00633",
     
---        -- Compute Fib(4) = Fib(2) + Fib(3)
---        8  => x"00B502B3", -- add t0, a0, a1
---        9  => x"00058513", -- add a0, x0, a1
---        10 => x"00028593", -- add a1, x0, t0
+        -- Compute Fib(4) = Fib(2) + Fib(3)
+        45  => x"00C586B3",
+        50  => x"00C005B3",
+        55  => x"00D00633",
     
---        -- Compute Fib(5) = Fib(3) + Fib(4)
---        11 => x"00B502B3", -- add t0, a0, a1
---        12 => x"00058513", -- add a0, x0, a1
---        13 => x"00028593", -- add a1, x0, t0
+        -- Compute Fib(5) = Fib(3) + Fib(4)
+        60  => x"00C586B3",
+        65  => x"00C005B3",
+        70  => x"00D00633",
         
---        -- Compute Fib(5) = Fib(3) + Fib(4)
---        14 => x"00B502B3", -- add t0, a0, a1
---        15 => x"00058513", -- add a0, x0, a1
---        16 => x"00028593", -- add a1, x0, t0
-        
-        
---        -- Compute Fib(5) = Fib(3) + Fib(4)
---        17 => x"00B502B3", -- add t0, a0, a1
---        18 => x"00058513", -- add a0, x0, a1
---        19 => x"00028593", -- add a1, x0, t0
+        -- Compute Fib(5) = Fib(3) + Fib(4)
+        75  => x"00C586B3",
+        80  => x"00C005B3",
+        85  => x"00D00633",
         
         
---        -- Compute Fib(5) = Fib(3) + Fib(4)
---        20 => x"00B502B3", -- add t0, a0, a1
---        21 => x"00058513", -- add a0, x0, a1
---        22 => x"00028593", -- add a1, x0, t0
+        -- Compute Fib(5) = Fib(3) + Fib(4)
+        90  => x"00C586B3",
+        95  => x"00C005B3",
+        100  => x"00D00633",
+        
+        
+        -- Compute Fib(5) = Fib(3) + Fib(4)
+        105  => x"00C586B3",
+        110  => x"00C005B3",
+        115  => x"00D00633",
     
---        -- Terminate program
---        23 => x"00A00713", -- addi a7, x0, 10  (Exit syscall)
---        24 => x"00000073", -- ecall            (Terminate program)
+        -- Terminate program
+        120  => x"00A00713", -- addi a7, x0, 10  (Exit syscall)
+        125  => x"00000073", -- ecall            (Terminate program)
         
---        others => x"00000033" -- NOP
---    );
+        others => x"00000033" -- NOP
+    );
 
     -- SIMPLE SUM TO TEST
-    signal mem : memory_type := (
+--    signal mem : memory_type := (
 --        0 => x"00100513",   -- addi a0, x0, 1        x10 - 1
 --        1 => x"00200593",   -- addi a1, x0, 2        x11 - 2
 --        2 => x"00300613",   -- addi  a2, x0, 3       x12 - 3
@@ -151,9 +151,9 @@ architecture Behavioral of instruction_memory is
 --        15 => x"00000033",
 --        16 => x"00000033",
 --        17 => x"00000033",
-        18 => x"0010A023", -- sw a5, 0(x1)
-        others => x"00000033"
-    );
+--        18 => x"0010A023", -- sw a5, 0(x1)
+--        others => x"00000033"
+--    );
 
 
 
