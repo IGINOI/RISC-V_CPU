@@ -33,6 +33,7 @@ entity decode is
         --INPUTS
         clk : in std_logic;
         instruction_in : in std_logic_vector(31 downto 0);
+        stall: in std_logic;
         
         --OUTPUTS
         opclass : out std_logic_vector(4 downto 0);
@@ -89,7 +90,7 @@ begin
     -- Forward program counters
     process(clk)
     begin
-        if rising_edge(clk) then
+        if rising_edge(clk) and stall = '0' then
             curr_pc_out <= curr_pc_in;
         end if;
     end process;
@@ -97,17 +98,17 @@ begin
     -- PROCESS (2) -> opcode, funct3 and funct7 extraction
     extract_info: process(clk)
     begin
-        funct3 <= instruction_in(14 downto 12);
-        funct7 <= instruction_in(31 downto 25);
-        opcode <= instruction_in(6 downto 0);
+        if stall = '0' then
+            funct3 <= instruction_in(14 downto 12);
+            funct7 <= instruction_in(31 downto 25);
+            opcode <= instruction_in(6 downto 0);
+        end if;
     end process;
     
     --PROCESS (3) -> immediate value re-assemble and 32bits extension
     process(clk)
     begin
-        if rising_edge(clk) then
-            
-            
+        if rising_edge(clk) and stall = '0' then
             case opcode is
                 -- I-type instructions
                 when "0010011" | "0000011" | "1100111" =>
@@ -173,7 +174,7 @@ begin
     -- PROCESS (4) -> intruction decoding    
     process(clk)
     begin
-        if rising_edge(clk) then
+        if rising_edge(clk) and stall = '0' then
             case opcode is
                 ------------------------
                 -- R-TYPE INSTRUCTION --

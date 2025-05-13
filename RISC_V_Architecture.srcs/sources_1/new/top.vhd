@@ -84,14 +84,17 @@ architecture Behavioral of top is
     -------------------------------
     -- Signals ControlUnit -> Fetch
     signal instruction_load_enable : std_logic;
+    signal stall_cf : std_logic;
     -- Signal ControlUnit -> Execute
     signal register_read_write_enable_ce : std_logic;
     signal memory_read_write_enable_ce : std_logic;
     
+    signal prova : std_logic_vector(31 downto 0);
+    
 begin
     
     -----------------------
-    -- FETCH iNSTRUCTION --
+    -- FETCH INSTRUCTION --
     -----------------------
     fetch_inst : entity work.fetch
     port map (
@@ -101,6 +104,7 @@ begin
         load_enable => instruction_load_enable, --enables the loading of the next pc
         alu_result => alu_result, --pc_out comes from the last stage
         branch_cond => branch_cond,
+        stall => stall_cf,
     
         -- OUTPUTS
         instruction_out => instruction,
@@ -116,11 +120,14 @@ begin
         clk => clk,
         reset => reset,
         instruction => instruction,
+        rd_prev => rd_forward_em,
+        stall_before => stall_cf,
         
         -- OUTPUTS
         program_counter_loader => instruction_load_enable,
         read_write_enable_register => register_read_write_enable_ce,
-        read_write_enable_memory => memory_read_write_enable_ce
+        read_write_enable_memory => memory_read_write_enable_ce,
+        stall => stall_cf
     );
 
     ------------------------
@@ -134,6 +141,7 @@ begin
         curr_pc_in => curr_pc_fetch_decode,
         register_write_enable => register_write_enable_wd,
         write_back_value => write_back_value,
+        stall => stall_cf,
     
         -- OUTPUTS
         curr_pc_out => curr_pc_decode_execute,
@@ -184,7 +192,9 @@ begin
         out_forward_memory_write_enable => memory_read_write_enable_em,
         in_forward_rd => rd_forward_de,
         out_forward_rd => rd_forward_em,
-        out_forward_rs2_value => rs2_value_forward_em
+        out_forward_rs2_value => rs2_value_forward_em,
+        
+        prova => prova
         
     );
 
@@ -198,6 +208,7 @@ begin
         alu_result => alu_result,
         rs2_value => rs2_value,
         mem_we => memory_read_write_enable_em,
+        prova => prova,
         
         -- OUTPUT
         mem_out => mem_out,

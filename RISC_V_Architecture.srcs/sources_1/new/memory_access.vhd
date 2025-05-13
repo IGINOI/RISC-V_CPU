@@ -34,7 +34,8 @@ entity memory_access is
     clk : in std_logic;
     alu_result : in std_logic_vector(31 downto 0);
     rs2_value : in std_logic_vector(31 downto 0);
-    mem_we : in std_logic; --coming from control path
+    mem_we : in std_logic;
+    prova: in std_logic_vector(31 downto 0);
     
     --OUTPUTS
     alu_result_out : out std_logic_vector(31 downto 0);
@@ -73,8 +74,8 @@ begin
         port map (
             -- INPUTS
             clk => clk,
-            read_write_enable => mem_we, --CORRECT THIS, ADD THE OR
-            memory_address => alu_result,
+            read_write_enable => mem_we,
+            memory_address => prova,
             write_value => rs2_value,
             
             --OUTPUTS

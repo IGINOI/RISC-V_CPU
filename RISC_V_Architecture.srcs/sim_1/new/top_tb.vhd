@@ -49,7 +49,7 @@ architecture Behavioral of top_tb is
     signal reset: std_logic;
     
     -- Clock generation process
-    constant clk_period : time := 10 ns;
+    constant clk_period : time := 100 ns;
 
 begin
 

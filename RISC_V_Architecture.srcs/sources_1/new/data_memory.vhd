@@ -76,7 +76,7 @@ begin
             else
                 mem_out <= (others => '0');
             end if;
-         end if;
+        end if;
     end process;
 
 end Behavioral;

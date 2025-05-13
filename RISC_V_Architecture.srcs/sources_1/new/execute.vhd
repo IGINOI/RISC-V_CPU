@@ -59,7 +59,8 @@ entity execute is
     out_forward_rd : out std_logic_vector(4 downto 0);
     out_forward_rs2_value : out std_logic_vector(31 downto 0);
     in_op_class : in std_logic_vector(4 downto 0);
-    out_op_class: out std_logic_vector(4 downto 0)
+    out_op_class: out std_logic_vector(4 downto 0);
+    prova: out std_logic_vector(31 downto 0)
     
     
   );
@@ -145,16 +146,18 @@ begin
     end process;
     
     
-    process (branch_condition_result)
+    process (clk)
     begin
-        if branch_condition_result = '1' then
-            if (in_op_class = "00100" or in_op_class = "10000") then
-                branch_cond <= '1';
+        if rising_edge(clk) then
+            if branch_condition_result = '1' then
+                if (in_op_class = "00100" or in_op_class = "10000") then
+                    branch_cond <= '1';
+                else
+                    branch_cond <= '0';
+                end if;
             else
                 branch_cond <= '0';
             end if;
-        else
-            branch_cond <= '0';
         end if;
     end process;
     
@@ -168,6 +171,9 @@ begin
             case alu_opcode is
                 when "0000" => -- ADD
                     alu_result <= std_logic_vector(unsigned(alu_in1) + unsigned(alu_in2));
+                    if in_forward_memory_write_enable = '1' then
+                        prova <= std_logic_vector(unsigned(alu_in1) + unsigned(alu_in2));
+                    end if;
                 when "0001" => -- SUB
                     alu_result <= std_logic_vector(unsigned(alu_in1) - unsigned(alu_in2));
                 when "0010" => -- SLL
@@ -201,5 +207,7 @@ begin
             end case;
         end if;
     end process;
+    
+
 
 end Behavioral;

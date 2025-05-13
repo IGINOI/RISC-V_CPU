@@ -71,22 +71,20 @@ begin
     --READING PROCESS: not sensitive to the clock since the reading can also be asynchronous
     process(clk)
     begin
-        if rising_edge(clk) then
-            --reading the 1st register
-            if read_register_1 = "00000" then
-                --if rs1 is "00000" it is reffering to X0 which is always 0
-                r1_out <= (others => '0');
-            else
-                --otherwise I extract the value from the register memory
-                r1_out <= register_file(to_integer(unsigned(read_register_1)));
-            end if;
-            
-            --reading the 2nd register
-            if read_register_2 = "00000" then
-                r2_out <= (others => '0');
-            else
-                r2_out <= register_file(to_integer(unsigned(read_register_2)));
-            end if;
+        --reading the 1st register
+        if read_register_1 = "00000" then
+            --if rs1 is "00000" it is reffering to X0 which is always 0
+            r1_out <= (others => '0');
+        else
+            --otherwise I extract the value from the register memory
+            r1_out <= register_file(to_integer(unsigned(read_register_1)));
+        end if;
+        
+        --reading the 2nd register
+        if read_register_2 = "00000" then
+            r2_out <= (others => '0');
+        else
+            r2_out <= register_file(to_integer(unsigned(read_register_2)));
         end if;
     end process;
     
