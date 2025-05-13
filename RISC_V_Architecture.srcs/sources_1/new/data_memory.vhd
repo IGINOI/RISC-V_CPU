@@ -42,6 +42,9 @@ entity data_memory is
 end data_memory;
 
 architecture Behavioral of data_memory is
+
+
+
     -- Define a memory array (custom type) for instructions (size: 31 instructions each of 32bit)
     type memory_type is array(0 to 4095) of std_logic_vector(31 downto 0);
     -- Define the signal of memory_type type
@@ -60,21 +63,17 @@ architecture Behavioral of data_memory is
     );
 begin
 
-
-
----- CHECK THIS PROCESS: PROBABLY IT IS VERY WRONG
-
     process (clk)
     begin
         if rising_edge(clk) then
             if (to_integer(unsigned(memory_address)) > 0 and to_integer(unsigned(memory_address)) <= 4095) then
-                if (read_write_enable = '0') then --we are reading 
+                if read_write_enable = '0' then --we are reading 
                     mem_out <= data_file(to_integer(unsigned(memory_address)));
-                else --we are writing
+                else
                     data_file(to_integer(unsigned(memory_address))) <= write_value;
                 end if;
             else
-                mem_out <= (others => '0');
+               mem_out <= (others => '0');
             end if;
         end if;
     end process;

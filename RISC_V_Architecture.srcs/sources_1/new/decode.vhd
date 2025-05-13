@@ -102,7 +102,7 @@ begin
             funct3 <= instruction_in(14 downto 12);
             funct7 <= instruction_in(31 downto 25);
             opcode <= instruction_in(6 downto 0);
-        end if;
+         end if;
     end process;
     
     --PROCESS (3) -> immediate value re-assemble and 32bits extension

@@ -53,6 +53,8 @@ entity memory_access is
 end memory_access;
 
 architecture Behavioral of memory_access is
+
+    signal delay : std_logic;
     
     component data_memory
         Port(
@@ -68,6 +70,13 @@ architecture Behavioral of memory_access is
     end component;
     
 begin
+
+    process (clk)
+    begin
+        if rising_edge(clk) then
+            delay <= mem_we;
+        end if;
+    end process;
     
     -- Instantiate and connect the instruction memory
     data_mem_instantiation : data_memory

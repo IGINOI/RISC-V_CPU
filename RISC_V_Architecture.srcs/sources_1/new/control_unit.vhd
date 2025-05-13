@@ -63,12 +63,12 @@ begin
     -- Decomposing instruction.
     decomposition: process(clk)
     begin
-        funct3 <= instruction(14 downto 12);
-        funct7 <= instruction(31 downto 25);
+        --funct3 <= instruction(14 downto 12);
+        --funct7 <= instruction(31 downto 25);
         opcode <= instruction(6 downto 0);
         
-        rs1 <= instruction(19 downto 15); -- Entering Decode
-        rs2 <= instruction(24 downto 20);
+        --rs1 <= instruction(19 downto 15); -- Entering Decode
+        --rs2 <= instruction(24 downto 20);
     end process;
     
     -- rs1 and rs2 are entering the decode stage

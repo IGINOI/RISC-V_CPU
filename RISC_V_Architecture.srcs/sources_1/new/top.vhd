@@ -206,7 +206,7 @@ begin
         -- INPUT
         clk => clk,
         alu_result => alu_result,
-        rs2_value => rs2_value,
+        rs2_value => rs2_value_forward_em, -- value to write in the memory
         mem_we => memory_read_write_enable_em,
         prova => prova,
         

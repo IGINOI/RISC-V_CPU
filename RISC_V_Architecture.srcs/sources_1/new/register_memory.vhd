@@ -91,7 +91,7 @@ begin
     --WRITING BACK PROCESS
     process(clk)
     begin
-        if rising_edge(clk) and write_enable='1' and write_register_address /= "00000" then --different from 0 since I cannot write there
+        if write_enable='1' and write_register_address /= "00000" then --different from 0 since I cannot write there
             register_file(to_integer(unsigned(write_register_address))) <= write_back_value;
         end if;
     end process;
