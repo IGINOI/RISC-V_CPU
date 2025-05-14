@@ -47,11 +47,11 @@ end write_back;
 architecture Behavioral of write_back is
 
 begin
-
-     compute_write_back_value: process(clk)
+    
+    -- Selectd the value to write bacj
+     select_write_back_value: process(clk)
      begin
         if rising_edge(clk) then
-            --Assign the value to rd_value
             if op_class = "00001" then --ALU operation
                 rd_value <= alu_result;      
             elsif op_class = "01000" then --LOAD operation
@@ -60,15 +60,16 @@ begin
                 rd_value <= (others => '0');  -- STORE & BRANCH
             end if;
         end if;
-     end process;
+     end process select_write_back_value;
      
-     send_back_signals: process(clk)
+     -- Return some signals back in the architecture
+     forward_back_signals: process(clk)
      begin
         if rising_edge(clk) then  
             -- Forward some signals
             out_forward_instruction_write_enable <= in_forward_instruction_write_enable;
             out_forward_rd <= in_forward_rd;
         end if;
-    end process;
+    end process forward_back_signals;
 
 end Behavioral;

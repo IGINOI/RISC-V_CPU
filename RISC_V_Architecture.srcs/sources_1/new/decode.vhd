@@ -87,15 +87,15 @@ architecture Behavioral of decode is
     
 begin
 
-    -- Forward program counters
-    process(clk)
+    -- Forward pc
+    forward: process(clk)
     begin
         if rising_edge(clk) and stall = '0' then
             curr_pc_out <= curr_pc_in;
         end if;
-    end process;
+    end process forward;
     
-    -- PROCESS (2) -> opcode, funct3 and funct7 extraction
+    -- Decode essential part of the isnstruction
     extract_info: process(clk)
     begin
         if stall = '0' then
@@ -103,10 +103,10 @@ begin
             funct7 <= instruction_in(31 downto 25);
             opcode <= instruction_in(6 downto 0);
          end if;
-    end process;
+    end process extract_info;
     
-    --PROCESS (3) -> immediate value re-assemble and 32bits extension
-    process(clk)
+    -- Reassable value
+    reassamble_values: process(clk)
     begin
         if rising_edge(clk) and stall = '0' then
             case opcode is
@@ -152,7 +152,7 @@ begin
                     out_rd <= instruction_in(11 downto 7);
             end case;
         end if;
-    end process;
+    end process reassamble_values;
     
     
     --Register Memory instantiation
@@ -171,8 +171,8 @@ begin
         );
 
     
-    -- PROCESS (4) -> intruction decoding    
-    process(clk)
+    -- Decode the instruction   
+    decode_instruction: process(clk)
     begin
         if rising_edge(clk) and stall = '0' then
             case opcode is
@@ -394,6 +394,6 @@ begin
                     
             end case;
         end if;
-    end process;
+    end process decode_instruction;
 
 end Behavioral;

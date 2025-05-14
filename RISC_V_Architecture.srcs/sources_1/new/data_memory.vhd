@@ -43,32 +43,21 @@ end data_memory;
 
 architecture Behavioral of data_memory is
 
-
-
     -- Define a memory array (custom type) for instructions (size: 31 instructions each of 32bit)
     type memory_type is array(0 to 4095) of std_logic_vector(31 downto 0);
-    -- Define the signal of memory_type type
     signal data_file : memory_type := (
-        0 => x"00000000", -- always 0
-        1 => x"00000000",
-        2 => x"00000000",
-        3 => x"00000000",
-        4 => x"00000000",
-        5 => x"00000000",
-        6 => x"00000000",
-        7 => x"00000000",
-        8 => x"00000000",
-        9 => x"00000000",
-        others => x"00000000"
+        others => x"00000000" -- completely to 0
     );
 begin
 
-    process (clk)
+    read_write: process(clk)
     begin
         if rising_edge(clk) then
             if (to_integer(unsigned(memory_address)) > 0 and to_integer(unsigned(memory_address)) <= 4095) then
-                if read_write_enable = '0' then --we are reading 
+                -- READ
+                if read_write_enable = '0' then
                     mem_out <= data_file(to_integer(unsigned(memory_address)));
+                -- WRITE
                 else
                     data_file(to_integer(unsigned(memory_address))) <= write_value;
                 end if;
@@ -76,6 +65,6 @@ begin
                mem_out <= (others => '0');
             end if;
         end if;
-    end process;
+    end process read_write;
 
 end Behavioral;

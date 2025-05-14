@@ -35,8 +35,7 @@ entity fetch is
         reset : in std_logic;
         load_enable : in std_logic;
         branch_cond : in std_logic;
-        stall : in std_logic;
-        alu_result : in std_logic_vector(31 downto 0); --the memory uses 1024 words (10bits)
+        alu_result : in std_logic_vector(31 downto 0);
         
         --OUTPUTS
         instruction_out : out std_logic_vector(31 downto 0);
@@ -64,34 +63,34 @@ architecture Behavioral of fetch is
 
 begin
     
+    -- Manage the loading and resetting of the program counter
     load_reset: process (clk)
     begin
-        -- I want to make it synchronous. So I check the clk as first thing
         if rising_edge(clk) then
-            -- MANAGE RESET
+            -- RESETTING PC
             if reset = '1' then
                 current_pc <= (others => '0');  -- If reset is clicked, the pc goes to 0
                 curr_pc_out <= (others => '0');   --Also the current pc goes to 0
                 next_pc <= (others => '0');
                 next_pc(0) <= '1';
-            -- MANAGE LOAD ENABLE
-            elsif load_enable = '1' and stall = '0' then
-                -- JUMPING
-                if branch_cond = '1' then
-                    current_pc <= alu_result;
-                    curr_pc_out <= alu_result;
-                    next_pc <= std_logic_vector(unsigned(alu_result) + 1);
-                -- NOT JUMPING
-                else 
+            -- LOADING NEXT PC ...
+            elsif load_enable = '1' then
+                -- ... NORMALLY
+                if branch_cond /= '1' then
                     current_pc <= next_pc;
                     curr_pc_out <= next_pc;
                     next_pc <= std_logic_vector(unsigned(next_pc) + 1);
+                -- ... JUMPING
+                else
+                    current_pc <= alu_result;
+                    curr_pc_out <= alu_result;
+                    next_pc <= std_logic_vector(unsigned(alu_result) + 1);
                 end if;
             end if;
         end if; 
-    end process;
+    end process load_reset;
     
-    -- Instantiate and connect the instruction memory
+    -- Fetch instruction from instruction memory
     instr_mem_instantiation : instruction_memory
         port map (
             clk => clk,

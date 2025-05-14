@@ -49,51 +49,34 @@ architecture Behavioral of register_memory is
 
     -- Define a memory array (custom type) for instructions (size: 31 instructions each of 32bit)
     type memory_type is array(0 to 31) of std_logic_vector(31 downto 0);
-    -- Define the signal of memory_type type
     signal register_file : memory_type := (
-        -- x"00000033" is the exadecimal code for the NOP (No operation) instruction => (ADD x0, x0, x0)
-        0 => x"00000000", -- always 0
-        1 => x"00000000",
-        2 => x"00000000",
-        3 => x"00000000",
-        4 => x"00000000",
-        5 => x"00000000",
-        6 => x"00000000",
-        7 => x"00000000",
-        8 => x"00000000",
-        9 => x"00000000",
-        10 => x"00000000",
-        others => x"00000000"
+        others => x"00000000" -- all to 0
     );
     
 begin
 
-    --READING PROCESS: not sensitive to the clock since the reading can also be asynchronous
-    process(clk)
+    -- Reading from memory
+    read_memory: process(clk)
     begin
-        --reading the 1st register
         if read_register_1 = "00000" then
-            --if rs1 is "00000" it is reffering to X0 which is always 0
-            r1_out <= (others => '0');
+            r1_out <= (others => '0'); -- Ensure we get 0 when dealing with register 0
         else
-            --otherwise I extract the value from the register memory
             r1_out <= register_file(to_integer(unsigned(read_register_1)));
         end if;
         
-        --reading the 2nd register
         if read_register_2 = "00000" then
             r2_out <= (others => '0');
         else
             r2_out <= register_file(to_integer(unsigned(read_register_2)));
         end if;
-    end process;
+    end process read_memory;
     
-    --WRITING BACK PROCESS
-    process(clk)
+    -- Writing back
+    write_memory: process(clk)
     begin
         if write_enable='1' and write_register_address /= "00000" then --different from 0 since I cannot write there
             register_file(to_integer(unsigned(write_register_address))) <= write_back_value;
         end if;
-    end process;
+    end process write_memory;
 
 end Behavioral;

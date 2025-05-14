@@ -104,7 +104,6 @@ begin
         load_enable => instruction_load_enable, --enables the loading of the next pc
         alu_result => alu_result, --pc_out comes from the last stage
         branch_cond => branch_cond,
-        stall => stall_cf,
     
         -- OUTPUTS
         instruction_out => instruction,

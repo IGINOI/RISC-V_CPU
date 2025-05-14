@@ -87,10 +87,8 @@ begin
         end if;
     end process;
     
-    -----------------------------
-    -- INPUT SIGNALS SELECTION --
-    -----------------------------
-    process (clk)
+    -- Input selection for ALU
+    select_operand: process(clk)
     begin
         case a_sel is
             when '0' =>
@@ -105,12 +103,10 @@ begin
             when others =>
                 alu_in2 <= immediate_value;      
         end case;
-    end process;
+    end process select_operand;
     
-    -----------------------
-    -- COMPARATOR  LOGIC --
-    -----------------------
-    process (clk)
+    -- Comparator
+    comparator: process(clk)
     begin
         if rising_edge(clk) then
             case cond_opcode is
@@ -143,10 +139,10 @@ begin
                     end if;
             end case;
         end if;
-    end process;
+    end process comparator;
     
-    
-    process (clk)
+    -- Control if branching is needed
+    branch: process(clk)
     begin
         if rising_edge(clk) then
             if branch_condition_result = '1' then
@@ -159,13 +155,11 @@ begin
                 branch_cond <= '0';
             end if;
         end if;
-    end process;
+    end process branch;
     
     
-    ---------------
-    -- ALU LOGIC --
-    ---------------
-    process (clk) 
+    -- ALU Logic
+    ALU: process(clk) 
     begin
         if rising_edge(clk) then
             case alu_opcode is
@@ -206,8 +200,5 @@ begin
                     alu_result <= std_logic_vector(unsigned(alu_in1) + unsigned(alu_in2));             
             end case;
         end if;
-    end process;
-    
-
-
+    end process ALU;
 end Behavioral;
