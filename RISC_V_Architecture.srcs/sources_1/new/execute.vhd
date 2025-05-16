@@ -32,7 +32,7 @@ entity execute is
   Port (
     --INPUTS
     clk : in std_logic;
-    reset : in std_logic;
+    --reset : in std_logic;
     a_sel : in std_logic;
     rs1_value : in std_logic_vector(31 downto 0);
     immediate_value : in std_logic_vector(31 downto 0);
@@ -88,7 +88,7 @@ begin
     end process;
     
     -- Input selection for ALU
-    select_operand: process(clk)
+    select_operand: process(a_sel, rs1_value, curr_pc, b_sel, rs2_value, immediate_value)
     begin
         case a_sel is
             when '0' =>
@@ -181,10 +181,10 @@ begin
                 when "0110" => -- AND
                     alu_result <= std_logic_vector(unsigned(alu_in1) and unsigned(alu_in2));
                 when "0111" => -- MUL
-                    alu_result <= std_logic_vector(unsigned(alu_in1) * unsigned(alu_in2));
+                    --alu_result <= std_logic_vector(unsigned(alu_in1) * unsigned(alu_in2));
                 when "1000" => -- MULH
-                    full_result <= unsigned(alu_in1) * unsigned(alu_in2);
-                    alu_result <= std_logic_vector(full_result(63 downto 32));
+                    --full_result <= unsigned(alu_in1) * unsigned(alu_in2);
+                    --alu_result <= std_logic_vector(full_result(63 downto 32));
                 when "1001" => -- DIV
                     alu_result <= std_logic_vector(signed(alu_in1) / signed(alu_in2));
                 when "1010" => -- DIVU

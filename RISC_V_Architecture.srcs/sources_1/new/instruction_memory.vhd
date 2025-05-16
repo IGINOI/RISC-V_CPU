@@ -53,21 +53,21 @@ architecture Behavioral of instruction_memory is
     
         9 => x"00500413",  -- addi x8, x0, 20      ; target = 20  01400413 target 5
     
-        12 => x"00000313",  -- addi x6, x0, 0       ; x6 = RAM base addr
+        12 => x"00100313",  -- addi x6, x0, 1       ; x6 = RAM base addr
         -- Loop start
         15 => x"00232023",  -- sw x2, 0(x6)         ; store Fₙ to RAM[x6]
         
-        18 => x"00130313",  -- addi x6, x6, 1       ; increment pointer
+        --18 => x"00130313",  -- addi x6, x6, 1       ; increment pointer
     
-        21 => x"00310233",  -- add x4, x2, x3       ; x4 = x2 + x3
+        18 => x"00310233",  -- add x4, x2, x3       ; x4 = x2 + x3
     
-        24 => x"00018113",  -- addi x2, x3, 0       ; x2 ← x3
+        21 => x"00018113",  -- addi x2, x3, 0       ; x2 ← x3
     
-        27 => x"00020193",  -- addi x3, x4, 0       ; x3 ← x4
+        24 => x"00020193",  -- addi x3, x4, 0       ; x3 ← x4
     
-        30 => x"00128293",  -- addi x5, x5, 1       ; x5 = x5 + 1
+        27 => x"00128293",  -- addi x5, x5, 1       ; x5 = x5 + 1
     
-        33 => x"fe82d7e3",  -- bge x5, x8, -18      ; if x5 < x8, jump back to loop  -36   fc82dee3
+        30 => x"fe82d7e3",  -- bge x5, x8, -18      ; if x5 < x8, jump back to loop  -36   fc82dee3
     
         others => x"00000000"
     );

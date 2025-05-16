@@ -48,7 +48,7 @@ architecture Behavioral of write_back is
 
 begin
     
-    -- Selectd the value to write bacj
+    -- Selectd the value to write back
      select_write_back_value: process(clk)
      begin
         if rising_edge(clk) then

@@ -33,7 +33,11 @@ entity decode is
         --INPUTS
         clk : in std_logic;
         instruction_in : in std_logic_vector(31 downto 0);
-        stall: in std_logic;
+        --stall: in std_logic;
+        
+        write_m_enable: in std_logic;
+        write_fibo_value: in std_logic_vector(31 downto 0);
+        signal_fibonacci: out std_logic_vector(31 downto 0);
         
         --OUTPUTS
         opclass : out std_logic_vector(4 downto 0);
@@ -74,6 +78,12 @@ architecture Behavioral of decode is
             clk : in std_logic;
             write_enable : in std_logic; -- 0=>read    1=>write
             
+            write_m_enable: in std_logic;
+            write_fibo_value: in std_logic_vector(31 downto 0);
+            signal_fibonacci: out std_logic_vector(31 downto 0);
+            
+            
+            
             read_register_1 : in std_logic_vector(4 downto 0);
             read_register_2 : in std_logic_vector(4 downto 0);
             write_register_address : in std_logic_vector(4 downto 0);
@@ -90,25 +100,23 @@ begin
     -- Forward pc
     forward: process(clk)
     begin
-        if rising_edge(clk) and stall = '0' then
+        if rising_edge(clk) then
             curr_pc_out <= curr_pc_in;
         end if;
     end process forward;
     
     -- Decode essential part of the isnstruction
-    extract_info: process(clk)
+    extract_info: process(instruction_in)
     begin
-        if stall = '0' then
-            funct3 <= instruction_in(14 downto 12);
-            funct7 <= instruction_in(31 downto 25);
-            opcode <= instruction_in(6 downto 0);
-         end if;
+        funct3 <= instruction_in(14 downto 12);
+        funct7 <= instruction_in(31 downto 25);
+        opcode <= instruction_in(6 downto 0);
     end process extract_info;
     
     -- Reassable value
     reassamble_values: process(clk)
     begin
-        if rising_edge(clk) and stall = '0' then
+        if rising_edge(clk) then
             case opcode is
                 -- I-type instructions
                 when "0010011" | "0000011" | "1100111" =>
@@ -160,6 +168,11 @@ begin
         port map (
             -- INPUT
             clk => clk,
+            
+            write_m_enable => write_m_enable,
+            write_fibo_value => write_fibo_value,
+            signal_fibonacci => signal_fibonacci,
+            
             write_enable => register_write_enable,
             read_register_1 => rs_1,
             read_register_2 => rs_2,
@@ -174,7 +187,7 @@ begin
     -- Decode the instruction   
     decode_instruction: process(clk)
     begin
-        if rising_edge(clk) and stall = '0' then
+        if rising_edge(clk) then
             case opcode is
                 ------------------------
                 -- R-TYPE INSTRUCTION --

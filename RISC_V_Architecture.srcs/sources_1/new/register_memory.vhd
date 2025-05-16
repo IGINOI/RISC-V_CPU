@@ -34,12 +34,16 @@ entity register_memory is
         clk : in std_logic;
         write_enable : in std_logic; -- 0=>read    1=>write
         
+        write_m_enable: in std_logic;
+        write_fibo_value: in std_logic_vector(31 downto 0);
+        
         read_register_1 : in std_logic_vector(4 downto 0);
         read_register_2 : in std_logic_vector(4 downto 0);
         write_register_address : in std_logic_vector(4 downto 0);
         write_back_value : in std_logic_vector(31 downto 0);  --write back register from memory
         
         --outputs
+        signal_fibonacci : out std_logic_vector(31 downto 0);
         r1_out : out std_logic_vector(31 downto 0);
         r2_out : out std_logic_vector(31 downto 0)
     );
@@ -56,7 +60,7 @@ architecture Behavioral of register_memory is
 begin
 
     -- Reading from memory
-    read_memory: process(clk)
+    read_memory: process(read_register_1, read_register_2, register_file)
     begin
         if read_register_1 = "00000" then
             r1_out <= (others => '0'); -- Ensure we get 0 when dealing with register 0
@@ -74,9 +78,16 @@ begin
     -- Writing back
     write_memory: process(clk)
     begin
-        if write_enable='1' and write_register_address /= "00000" then --different from 0 since I cannot write there
-            register_file(to_integer(unsigned(write_register_address))) <= write_back_value;
+        if rising_edge(clk) then
+            if write_enable='1' and write_register_address /= "00000" then --different from 0 since I cannot write there
+                register_file(to_integer(unsigned(write_register_address))) <= write_back_value;
+            elsif write_m_enable='1' then
+                register_file(31) <= write_fibo_value;
+            end if;
         end if;
     end process write_memory;
+    
+    signal_fibonacci <= register_file(31);
+    
 
 end Behavioral;

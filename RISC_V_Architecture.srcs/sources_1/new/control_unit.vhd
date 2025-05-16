@@ -33,9 +33,7 @@ entity control_unit is
         -- INPUTS
         clk: in std_logic;
         reset: in std_logic;
-        instruction: in std_logic_vector(31 downto 0);
-        rd_prev: in std_logic_vector(4 downto 0);
-        stall_before: in std_logic;
+        opcode: in std_logic_vector(6 downto 0);
         
         -- OUTPUTS
         program_counter_loader: out std_logic;
@@ -46,22 +44,14 @@ entity control_unit is
 end control_unit;
 
 architecture Behavioral of control_unit is
-
-    signal opcode : std_logic_vector(6 downto 0);
     signal prev_pc_enable : std_logic := '0';
 
     signal regwrite_prev : std_logic := '0';
 
 begin
     
-    -- Decomposing instruction.
-    decomposition: process(clk)
-    begin
-        opcode <= instruction(6 downto 0);
-    end process;
-    
     -- Initialize control signals
-    process(clk)
+    control_signals: process(clk)
     begin
         if rising_edge (clk) then
             if reset = '1' then
@@ -69,7 +59,6 @@ begin
                 read_write_enable_register <= '0';
                 read_write_enable_memory <= '0';
                 stall <= '0';
-                regwrite_prev <= '0';
             else
                 if prev_pc_enable = '0' then
                     prev_pc_enable <= '1';
