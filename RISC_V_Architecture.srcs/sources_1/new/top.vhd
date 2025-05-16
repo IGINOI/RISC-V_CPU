@@ -146,11 +146,11 @@ begin
     
     select_signal_to_diplay: process(sw1, instruction, sw2, curr_pc_fetch_decode, sw3, fibonacci_value)
     begin
-        if sw1 = '1' then
-            signal_for_fpga <= instruction;
-        elsif sw2 = '1' then
+        if sw1 = '1' and sw2 = '0' and sw3 = '0' then
             signal_for_fpga <= curr_pc_fetch_decode;
-        elsif sw3 = '1' then
+        elsif sw1 = '0' and sw2 = '1' and sw3 = '0' then
+            signal_for_fpga <= instruction;
+        elsif sw1 = '0' and sw2 = '0' and sw3 = '1' then
             signal_for_fpga <= fibonacci_value;
         else
             signal_for_fpga <= (others => '1');
