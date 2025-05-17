@@ -30,6 +30,8 @@ entity top is
         sw1: in std_logic;
         sw2: in std_logic;
         sw3: in std_logic;
+        sw15: in std_logic;
+        sw16: in std_logic;
         
         -- OUTPUTS
         led1 : out std_logic;
@@ -107,7 +109,24 @@ architecture Behavioral of top is
     signal nibble      : std_logic_vector(3 downto 0);
     signal seg_pattern : std_logic_vector(6 downto 0);
     
+    
+    constant count_1Hz : integer := 49999999;  -- 1 Hz toggle on a 100 MHz input
+    constant count_100Hz : integer := 49999;  -- 100 Hz
+    constant count_100MHz : integer := 1;
+    signal count : integer;
+    
 begin
+
+    select_clk: process(sw16, sw15)
+    begin
+        if sw16='1' and sw15='0' then
+            count <= count_1Hz;
+        elsif sw16='0' and sw15='1' then
+            count <= count_100Hz;
+        else
+            count <= count_100MHz;
+        end if;
+    end process;
 
     -- Reducing clock to 1Hz
     reduce_clk: process(clka)
@@ -117,7 +136,7 @@ begin
                 counter <= (others => '0');
                 led1 <= '1';
             end if;
-            if counter = 9_999_999 then
+            if counter = count then -- Set 50000000 for 1 HZ or 500000 for 100Hz
                 clk <= not clk;
                 counter <= (others => '0');
                 led1 <= '0';
